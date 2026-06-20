@@ -20,6 +20,10 @@
   --error: #B5503F;
   --warning: #A87B3C;
   --gold: #9A7B3F;
+  --energy: #D97706;
+  --energy-soft: rgba(217,119,6,.1);
+  --fire: #EA580C;
+  --fire-soft: rgba(234,88,12,.08);
   --shadow: 0 1px 2px rgba(40,38,31,.04), 0 4px 18px rgba(40,38,31,.05);
   --shadow-hover: 0 2px 6px rgba(40,38,31,.06), 0 10px 28px rgba(40,38,31,.08);
   --Ch01: #4A6FA5;
@@ -58,8 +62,66 @@ h1 {
   font-size: 24px; font-weight: 700; margin-bottom: 6px;
 }
 .home-sub {
-  color: var(--muted); font-size: 13px; margin-bottom: 32px;
+  color: var(--muted); font-size: 13px; margin-bottom: 24px;
 }
+/* === HERO ROW: カウントダウン + ストリーク === */
+.hero-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;
+}
+.countdown-block {
+  background: var(--primary); border-radius: 18px; padding: 24px 20px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.countdown-block::after {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 100px; height: 100px; border-radius: 50%;
+  background: rgba(217,119,6,.15);
+}
+.countdown-num {
+  font-size: 60px; font-weight: 800; color: var(--energy);
+  line-height: 1; letter-spacing: -2px; font-variant-numeric: tabular-nums;
+}
+.countdown-label {
+  font-size: 12px; color: rgba(255,255,255,.65); margin-top: 6px;
+}
+.countdown-date {
+  font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px;
+}
+.streak-block {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 24px 20px; text-align: center;
+  box-shadow: var(--shadow);
+}
+.streak-fire { font-size: 26px; line-height: 1; margin-bottom: 4px; }
+.streak-num {
+  font-size: 52px; font-weight: 800; color: var(--fire);
+  line-height: 1; letter-spacing: -2px;
+}
+.streak-num.zero { color: var(--muted); }
+.streak-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+/* === 今日の目標 === */
+.mission-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 28px;
+  box-shadow: var(--shadow);
+}
+.mission-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+}
+.mission-title { font-size: 13px; font-weight: 700; }
+.mission-count { font-size: 13px; font-weight: 700; color: var(--energy); }
+.mission-count.done { color: var(--success); }
+.mission-bar-bg {
+  background: var(--border); border-radius: 99px; height: 8px;
+  overflow: hidden; margin-bottom: 8px;
+}
+.mission-bar-fill {
+  height: 100%; border-radius: 99px; background: var(--energy);
+  transition: width .5s cubic-bezier(.4,0,.2,1); width: 0%;
+}
+.mission-bar-fill.done { background: var(--success); }
+.mission-sub { font-size: 12px; color: var(--muted); }
+/* legacy stat-card (stats画面用に残す) */
 .stats-row {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
   margin-bottom: 32px;
@@ -430,42 +492,38 @@ h1 {
       <button class="guidance-btn" id="guidance-btn" onclick="">—</button>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-num" id="stat-total">0</div>
-        <div class="stat-label">総回答数</div>
+    <!-- Hero: カウントダウン + ストリーク -->
+    <div class="hero-row">
+      <div class="countdown-block">
+        <div class="countdown-num" id="days-left">—</div>
+        <div class="countdown-label">試験まであと</div>
+        <div class="countdown-date">2026年7月27日</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-acc">—</div>
-        <div class="stat-label">正答率</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-streak">0</div>
-        <div class="stat-label">連続学習日</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-due" style="color:var(--accent)">0</div>
-        <div class="stat-label">今日の復習</div>
+      <div class="streak-block">
+        <div class="streak-fire" id="streak-fire">🔥</div>
+        <div class="streak-num" id="streak-hero">0</div>
+        <div class="streak-label">日連続</div>
       </div>
     </div>
 
-    <div class="stats-row" style="margin-bottom:32px">
-      <div class="stat-card">
-        <div class="stat-num" id="stat-new">0</div>
-        <div class="stat-label" style="color:var(--muted)">未学習</div>
+    <!-- 今日の目標 -->
+    <div class="mission-card">
+      <div class="mission-header">
+        <span class="mission-title">今日の目標</span>
+        <span class="mission-count" id="mission-count"><span id="today-done">0</span> / 20問</span>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-learning" style="color:var(--warning)">0</div>
-        <div class="stat-label">習得中</div>
+      <div class="mission-bar-bg">
+        <div class="mission-bar-fill" id="mission-fill"></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-review" style="color:#4A6FA5">0</div>
-        <div class="stat-label">定着中</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-mastered" style="color:var(--success)">0</div>
-        <div class="stat-label">習熟済み</div>
-      </div>
+      <div class="mission-sub" id="mission-sub">今日まだ解いていません。まず1問から始めましょう！</div>
+    </div>
+
+    <!-- hidden stat ids (JS互換性のため残す) -->
+    <div style="display:none">
+      <span id="stat-total"></span><span id="stat-acc"></span>
+      <span id="stat-streak"></span><span id="stat-due"></span>
+      <span id="stat-new"></span><span id="stat-learning"></span>
+      <span id="stat-review"></span><span id="stat-mastered"></span>
     </div>
 
     <div class="section-title">モード選択</div>
@@ -7899,8 +7957,9 @@ function updateGuidance(db, ms) {
 function initHome() {
   const db = loadDB();
   document.getElementById('home-total-q').textContent = QUESTIONS.length;
-  document.getElementById('stat-total').textContent = db.totalAnswered;
   const acc = db.totalAnswered > 0 ? Math.round(db.totalCorrect / db.totalAnswered * 100) + '%' : '—';
+  // hidden spans (互換性)
+  document.getElementById('stat-total').textContent = db.totalAnswered;
   document.getElementById('stat-acc').textContent = acc;
   document.getElementById('stat-streak').textContent = db.streak;
 
@@ -7912,6 +7971,47 @@ function initHome() {
   document.getElementById('stat-learning').textContent = ms.learning || 0;
   document.getElementById('stat-review').textContent = ms.review || 0;
   document.getElementById('stat-mastered').textContent = ms.mastered || 0;
+
+  // === 試験カウントダウン ===
+  const EXAM = new Date('2026-07-27T00:00:00');
+  const now  = new Date(); now.setHours(0,0,0,0);
+  const daysLeft = Math.max(0, Math.round((EXAM - now) / 86400000));
+  document.getElementById('days-left').textContent = daysLeft;
+
+  // === ストリーク ===
+  const streakEl = document.getElementById('streak-hero');
+  streakEl.textContent = db.streak;
+  if (db.streak === 0) {
+    streakEl.classList.add('zero');
+    document.getElementById('streak-fire').textContent = '💤';
+  } else {
+    streakEl.classList.remove('zero');
+    document.getElementById('streak-fire').textContent = db.streak >= 7 ? '🔥' : '✨';
+  }
+
+  // === 今日の目標進捗 ===
+  const todayStr  = todayISO();
+  const DAILY_GOAL = 20;
+  const todayDone = Object.values(db.srs || {}).filter(s => s.lastDate === todayStr).length;
+  const pct = Math.min(100, Math.round(todayDone / DAILY_GOAL * 100));
+  document.getElementById('today-done').textContent = todayDone;
+  const fillEl  = document.getElementById('mission-fill');
+  const countEl = document.getElementById('mission-count');
+  const subEl   = document.getElementById('mission-sub');
+  fillEl.style.width = pct + '%';
+  if (todayDone >= DAILY_GOAL) {
+    fillEl.classList.add('done'); countEl.classList.add('done');
+    subEl.textContent = `今日の目標達成！🎉  累計 ${db.totalAnswered}問突破`;
+  } else if (todayDone > 0) {
+    fillEl.classList.remove('done'); countEl.classList.remove('done');
+    subEl.textContent = `残り ${DAILY_GOAL - todayDone}問で今日の目標達成！このまま続けましょう`;
+  } else {
+    fillEl.classList.remove('done'); countEl.classList.remove('done');
+    const msg = ms.due > 0
+      ? `復習が ${ms.due}問 たまっています。今日の復習から始めましょう！`
+      : '今日まだ解いていません。まず1問から始めましょう！';
+    subEl.textContent = msg;
+  }
 
   // 今日の復習カード: 件数を動的に表示
   const reviewCard = document.getElementById('reviewcard');
