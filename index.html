@@ -473,38 +473,38 @@ h1 {
       <div class="mode-card" id="reviewcard" onclick="startMode('review')">
         <div class="mode-icon">🔁</div>
         <div class="mode-title">今日の復習</div>
-        <div class="mode-desc">SRS期限が来た問題を優先演習</div>
+        <div class="mode-desc">前回解いた問題を忘れる前にもう一度。忘れかけたタイミングで出題するので少ない時間で定着できる</div>
         <div class="mode-when">毎日ここから始める</div>
       </div>
       <div class="mode-card" onclick="startMode('interleave')">
         <div class="mode-icon">🔀</div>
-        <div class="mode-title">インターリーブ</div>
-        <div class="mode-desc">全章混合・記憶定着に最も効く</div>
-        <div class="mode-when">復習後・メイン演習に</div>
+        <div class="mode-title">全章まぜこぜ演習</div>
+        <div class="mode-desc">6章の問題をランダムに出題。「次は何が来るかわからない」状態で解くと、本番に近い力がつく</div>
+        <div class="mode-when">復習後のメイン練習に</div>
       </div>
       <div class="mode-card" onclick="startMode('diagnostic')">
         <div class="mode-icon">🎯</div>
         <div class="mode-title">診断テスト</div>
-        <div class="mode-desc">全6章から30問・弱点を客観特定</div>
-        <div class="mode-when">最初 or 2週間ごとに</div>
+        <div class="mode-desc">全6章から30問をまとめて解いて、どの章が弱いかスコアで確認できる</div>
+        <div class="mode-when">最初に一度・2週間ごとに</div>
       </div>
       <div class="mode-card" onclick="startMode('mock')">
         <div class="mode-icon">⏱</div>
-        <div class="mode-title">75分模試</div>
-        <div class="mode-desc">本番形式・60問・タイマー付き</div>
+        <div class="mode-title">本番シミュレーション</div>
+        <div class="mode-desc">試験と同じ75分・60問で完全再現。時間のプレッシャーに慣れておく</div>
         <div class="mode-when">試験1週間前から</div>
       </div>
       <div class="mode-card" id="weakcard" onclick="startMode('weak')">
         <div class="mode-icon">📌</div>
-        <div class="mode-title">弱点復習</div>
-        <div class="mode-desc">誤答した問題を再演習</div>
-        <div class="mode-when">診断後に重点補強</div>
+        <div class="mode-title">苦手問題だけ再チャレンジ</div>
+        <div class="mode-desc">一度でも間違えた問題だけを集めて出題。苦手を集中的に潰せる</div>
+        <div class="mode-when">診断テスト後の補強に</div>
       </div>
       <div class="mode-card" onclick="showStats()">
         <div class="mode-icon">📊</div>
-        <div class="mode-title">学習統計</div>
-        <div class="mode-desc">問題別正答履歴・進捗確認</div>
-        <div class="mode-when">週1回の進捗確認に</div>
+        <div class="mode-title">学習の進み具合を確認</div>
+        <div class="mode-desc">問題ごとの正答率・学習ペースを一覧で確認できる</div>
+        <div class="mode-when">週1回の振り返りに</div>
       </div>
     </div>
 
@@ -7863,15 +7863,15 @@ function getNextAction(db, ms) {
   if (ms.new > 80) {
     return {
       title: 'まだ手をつけていない問題がたくさんあります',
-      body: `未学習の問題が ${ms.new}問 残っています。章別ドリルで1章ずつ進めていくか、インターリーブで全章を混ぜて取り組みましょう。`,
+      body: `未学習の問題が ${ms.new}問 残っています。章別ドリルで1章ずつ進めるか、「全章まぜこぜ演習」で全体をランダムに取り組みましょう。`,
       btnText: '章別ドリルへ ↓',
       fn: "document.getElementById('ch-grid').scrollIntoView({behavior:'smooth'})"
     };
   }
   return {
-    title: 'インターリーブで記憶を定着させましょう',
-    body: '全章を混ぜて出題するインターリーブ学習は、章別ドリルより記憶の定着が高いことが実証されています。今の段階ではこれがメイン演習です。',
-    btnText: 'インターリーブを始める →',
+    title: '全章まぜこぜ演習で記憶を定着させましょう',
+    body: '章をまたいでランダムに出題する練習は、1章ずつ解くより記憶の定着が高いことが実証されています。今の段階ではこれがメイン演習です。',
+    btnText: '全章まぜこぜ演習を始める →',
     fn: "startMode('interleave')"
   };
 }
@@ -8042,8 +8042,8 @@ function startQuiz() {
     diagnostic: '診断テスト（30問）',
     mock: '75分模試（60問）',
     weak: '弱点復習',
-    review: '今日の復習（SRS）',
-    interleave: 'インターリーブ（40問）',
+    review: '今日の復習',
+    interleave: '全章まぜこぜ演習（40問）',
     chapter: CHAPTER_INFO[STATE.chapter]?.name || '章別ドリル',
   };
   document.getElementById('quiz-mode-label').textContent = modeLabels[STATE.mode] || '';
