@@ -8304,15 +8304,25 @@ function renderQuestion() {
   document.getElementById('exp-correct-text').textContent = '';
   document.getElementById('exp-text').textContent = '';
 
-  // ヒントエリア
+  // ヒントエリア（問題文・選択肢に実際に出てくる用語のみ表示）
   const hintArea = document.getElementById('hint-area');
   const hintBox = document.getElementById('hint-box');
   const hintToggle = document.getElementById('hint-toggle');
   hintBox.classList.remove('show');
   hintToggle.classList.remove('open');
   hintToggle.textContent = '💡 用語ヒントを見る';
-  if (q.hint && q.hint.length) {
-    hintBox.innerHTML = q.hint.map(h =>
+  const searchText = [
+    q.question,
+    ...Object.values(q.choices || {}),
+    q.section || ''
+  ].join(' ').toLowerCase();
+  const relevantHints = (q.hint || []).filter(h =>
+    searchText.includes(h.en.toLowerCase()) ||
+    searchText.includes(h.ja.toLowerCase()) ||
+    (h.en.length >= 3 && searchText.includes(h.en.toLowerCase().replace(/\s+/g, '')))
+  );
+  if (relevantHints.length) {
+    hintBox.innerHTML = relevantHints.map(h =>
       `<div class="hint-item"><span class="hint-en">${h.en}</span> <span class="hint-ja">= ${h.ja}</span><br><span class="hint-def">→ ${h.def}</span></div>`
     ).join('');
     hintArea.style.display = '';
