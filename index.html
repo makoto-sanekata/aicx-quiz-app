@@ -1,0 +1,4289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIエージェント・ストラテジスト 演習アプリ</title>
+<style>
+:root {
+  --bg: #F5F4EF;
+  --card: #FFFFFF;
+  --card2: #F3F1E9;
+  --border: #E6E2D7;
+  --text: #28261F;
+  --muted: #726E63;
+  --primary: #1F1D1A;
+  --primary-hover: #000000;
+  --accent: #C15F3C;
+  --accent-soft: rgba(193,95,60,.09);
+  --success: #3F7D5A;
+  --error: #B5503F;
+  --warning: #A87B3C;
+  --gold: #9A7B3F;
+  --shadow: 0 1px 2px rgba(40,38,31,.04), 0 4px 18px rgba(40,38,31,.05);
+  --shadow-hover: 0 2px 6px rgba(40,38,31,.06), 0 10px 28px rgba(40,38,31,.08);
+  --Ch01: #4A6FA5;
+  --Ch02: #5B8C6E;
+  --Ch03: #8B6CA8;
+  --Ch04: #C2774A;
+  --Ch05: #B06A86;
+  --Ch06: #4E8C96;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1 {
+  font-family: Georgia, "Times New Roman", ui-serif, serif;
+  letter-spacing: -0.01em;
+}
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* === HOME === */
+.home-wrap {
+  max-width: 680px; margin: 0 auto; padding: 40px 20px;
+}
+.home-logo {
+  font-size: 11px; letter-spacing: 2px; color: var(--muted);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+h1 {
+  font-size: 24px; font-weight: 700; margin-bottom: 6px;
+}
+.home-sub {
+  color: var(--muted); font-size: 13px; margin-bottom: 32px;
+}
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 12px; text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-num { font-size: 22px; font-weight: 700; }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.mode-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 28px;
+}
+.mode-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px; cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: border-color .15s, transform .12s, box-shadow .15s;
+}
+.mode-card:hover {
+  border-color: var(--accent); transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.mode-card.disabled { opacity: 0.4; cursor: not-allowed; }
+.mode-icon { font-size: 28px; margin-bottom: 10px; }
+.mode-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.mode-desc { font-size: 12px; color: var(--muted); }
+.ch-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 28px;
+}
+.ch-btn {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; cursor: pointer;
+  text-align: left; box-shadow: var(--shadow);
+  transition: border-color .15s, transform .12s, box-shadow .15s;
+}
+.ch-btn:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.ch-btn-badge {
+  font-size: 11px; font-weight: 700; padding: 2px 6px;
+  border-radius: 4px; display: inline-block; margin-bottom: 6px;
+  color: #fff;
+}
+.ch-btn-name { font-size: 12px; line-height: 1.4; }
+.ch-btn-count { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.section-title {
+  font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px; font-weight: 600;
+}
+
+/* === QUIZ === */
+.quiz-wrap {
+  max-width: 720px; margin: 0 auto; padding: 20px 20px 60px;
+}
+.quiz-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.quiz-back {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 13px; padding: 4px 0;
+}
+.quiz-back:hover { color: var(--text); }
+.quiz-timer {
+  font-size: 13px; font-weight: 600; color: var(--warning);
+  background: rgba(245,158,11,.1); padding: 4px 10px;
+  border-radius: 20px;
+}
+.quiz-timer.warning { color: var(--error); background: rgba(239,68,68,.1); }
+.progress-bar-wrap { margin-bottom: 20px; }
+.progress-bar-bg {
+  background: var(--card2); border-radius: 4px; height: 5px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: var(--accent); border-radius: 4px;
+  transition: width .3s;
+}
+.progress-meta {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--muted); margin-top: 4px;
+}
+.q-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 26px;
+  box-shadow: var(--shadow);
+}
+.q-badges {
+  display: flex; gap: 8px; margin-bottom: 14px;
+}
+.q-badge {
+  font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border-radius: 4px; color: #fff;
+}
+.q-badge.section {
+  background: var(--card2); color: var(--muted); font-weight: 500;
+}
+.q-text {
+  font-size: 16px; line-height: 1.7; margin-bottom: 12px; font-weight: 500;
+}
+.hint-area { margin-bottom: 18px; }
+.hint-toggle {
+  background: none; border: 1px solid rgba(154,123,63,.4);
+  color: var(--gold); font-size: 12px; padding: 5px 11px;
+  border-radius: 8px; cursor: pointer; transition: background .15s;
+}
+.hint-toggle:hover { background: rgba(154,123,63,.08); }
+.hint-toggle.open { background: rgba(154,123,63,.08); }
+.hint-box {
+  margin-top: 8px; background: rgba(154,123,63,.06);
+  border: 1px solid rgba(154,123,63,.22); border-radius: 10px;
+  padding: 12px 15px; display: none;
+}
+.hint-box.show { display: block; }
+.hint-item { margin-bottom: 6px; font-size: 13px; line-height: 1.6; }
+.hint-item:last-child { margin-bottom: 0; }
+.hint-en { color: var(--gold); font-weight: 700; }
+.hint-ja { color: var(--muted); }
+.hint-def { color: var(--text); }
+.choices { display: grid; gap: 10px; }
+.choice-btn {
+  background: var(--card2); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 15px 17px;
+  cursor: pointer; text-align: left;
+  font-size: 14px; color: var(--text); line-height: 1.5;
+  transition: border-color .12s, background .12s, box-shadow .12s;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.choice-btn:hover:not(.locked) {
+  border-color: var(--accent); background: var(--accent-soft);
+}
+.choice-btn.selected {
+  border-color: var(--accent); background: var(--accent-soft);
+}
+.choice-btn.correct {
+  border-color: var(--success); background: rgba(63,125,90,.10);
+}
+.choice-btn.wrong {
+  border-color: var(--error); background: rgba(181,80,63,.09);
+}
+.choice-btn.dimmed { opacity: 0.45; }
+.choice-label {
+  font-weight: 700; min-width: 20px; color: var(--muted); flex-shrink: 0;
+}
+.choice-btn.correct .choice-label { color: var(--success); }
+.choice-btn.wrong .choice-label { color: var(--error); }
+.explanation-box {
+  margin-top: 18px; border-radius: 10px; display: none; overflow: hidden;
+}
+.explanation-box.show { display: block; }
+.exp-wrong-layer {
+  background: rgba(181,80,63,.06); border: 1px solid rgba(181,80,63,.28);
+  border-radius: 12px 12px 0 0; padding: 13px 16px; border-bottom: none;
+}
+.exp-correct-layer {
+  background: rgba(63,125,90,.07); border: 1px solid rgba(63,125,90,.3);
+  padding: 13px 16px; border-bottom: none;
+}
+.explanation-box.show-correct-only .exp-correct-layer {
+  border-radius: 12px 12px 0 0;
+}
+.exp-main-layer {
+  background: #FAF8F2; border: 1px solid var(--border);
+  border-radius: 0 0 12px 12px; padding: 15px 16px;
+}
+.exp-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.exp-label.wrong { color: var(--error); }
+.exp-label.correct { color: var(--success); }
+.exp-label.main { color: var(--accent); }
+.exp-chosen-text { font-size: 13px; color: var(--error); margin-bottom: 4px; }
+.exp-correct-text { font-size: 13px; color: var(--success); font-weight: 500; }
+.exp-text { font-size: 13px; line-height: 1.75; color: var(--text); }
+.quiz-actions {
+  margin-top: 18px; display: flex; gap: 12px; justify-content: flex-end;
+}
+.btn {
+  padding: 11px 22px; border-radius: 10px; border: none;
+  cursor: pointer; font-size: 14px; font-weight: 600;
+  transition: background .15s, transform .1s, box-shadow .15s;
+}
+.btn-primary {
+  background: var(--primary); color: #fff;
+  box-shadow: 0 1px 2px rgba(40,38,31,.12);
+}
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.btn-ghost {
+  background: var(--card); color: var(--text); border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--card2); }
+
+/* === RESULT === */
+.result-wrap {
+  max-width: 640px; margin: 0 auto; padding: 40px 20px;
+}
+.result-score {
+  text-align: center; background: var(--card);
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 36px; margin-bottom: 24px; box-shadow: var(--shadow);
+}
+.score-circle {
+  width: 100px; height: 100px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 800; margin: 0 auto 12px;
+  border: 4px solid;
+}
+.score-circle.pass { border-color: var(--success); color: var(--success); }
+.score-circle.fail { border-color: var(--warning); color: var(--warning); }
+.score-label { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.result-ch-breakdown {
+  display: grid; gap: 8px; margin-bottom: 24px;
+}
+.ch-bar-row {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow);
+}
+.ch-bar-name { font-size: 12px; min-width: 140px; }
+.ch-bar-bg { flex: 1; background: var(--card2); border-radius: 4px; height: 8px; overflow: hidden; }
+.ch-bar-fill { height: 100%; border-radius: 4px; transition: width .4s; }
+.ch-bar-pct { font-size: 12px; font-weight: 600; min-width: 36px; text-align: right; }
+.result-actions { display: flex; gap: 12px; }
+.result-review-list { display: grid; gap: 8px; }
+.review-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 13px; font-size: 13px;
+  box-shadow: var(--shadow);
+}
+.review-item .ri-q { color: var(--muted); margin-bottom: 4px; }
+.review-item .ri-exp { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+/* === STATS SCREEN === */
+.stats-wrap {
+  max-width: 640px; margin: 0 auto; padding: 40px 20px;
+}
+.streak-banner {
+  background: linear-gradient(135deg, #2B2A24, #44403A);
+  color: #F5F4EF;
+  border-radius: 14px; padding: 22px; margin-bottom: 24px; text-align: center;
+  box-shadow: var(--shadow);
+}
+.streak-num { font-size: 36px; font-weight: 800; color: var(--accent); }
+.q-accuracy-list { display: grid; gap: 8px; }
+.qa-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px 14px;
+  font-size: 13px; box-shadow: var(--shadow);
+}
+.qa-dots { display: flex; gap: 4px; }
+.qa-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.qa-dot.c { background: var(--success); }
+.qa-dot.w { background: var(--error); }
+.qa-dot.u { background: var(--card2); border: 1px solid var(--border); }
+
+@media (max-width: 520px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .mode-grid { grid-template-columns: 1fr; }
+  .ch-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* === 事前自信度評価 === */
+.confidence-area {
+  margin-bottom: 16px; padding: 11px 14px;
+  background: var(--card2); border: 1px solid var(--border); border-radius: 10px;
+}
+.conf-label {
+  font-size: 11px; color: var(--muted); margin-bottom: 8px;
+  font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+}
+.conf-buttons { display: flex; gap: 6px; }
+.conf-btn {
+  flex: 1; background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 8px 4px; cursor: pointer; font-size: 19px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  transition: border-color .12s, background .12s, transform .1s;
+}
+.conf-btn span { font-size: 10px; color: var(--muted); line-height: 1.3; }
+.conf-btn:hover:not(.locked) { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-1px); }
+.conf-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+.conf-btn.selected span { color: var(--accent); font-weight: 600; }
+.conf-btn.locked { cursor: default; opacity: 0.7; }
+
+/* === 習熟ステージバッジ === */
+.stage-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; letter-spacing: 0.4px;
+}
+.stage-new { background: var(--card2); color: var(--muted); border: 1px solid var(--border); }
+.stage-learning { background: rgba(168,123,60,.13); color: var(--warning); border: 1px solid rgba(168,123,60,.3); }
+.stage-review { background: rgba(74,111,165,.1); color: #4A6FA5; border: 1px solid rgba(74,111,165,.3); }
+.stage-mastered { background: rgba(63,125,90,.1); color: var(--success); border: 1px solid rgba(63,125,90,.3); }
+
+/* === SRS 次回日時表示 === */
+.srs-next {
+  margin-top: 10px; font-size: 11px; color: var(--muted);
+  padding: 6px 11px; background: var(--card2); border-radius: 6px;
+  display: none; border: 1px solid var(--border);
+}
+.srs-next.show { display: block; }
+
+/* === 章ボタン ステージバー === */
+.ch-stage-bar { display: flex; gap: 2px; margin-top: 5px; overflow: hidden; height: 4px; border-radius: 3px; }
+.ch-stage-seg { height: 100%; min-width: 2px; }
+
+/* === モードグリッド 3列対応 === */
+.mode-grid-wide { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 520px) { .mode-grid-wide { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- ===== HOME ===== -->
+<div id="screen-home" class="screen active">
+  <div class="home-wrap">
+    <div class="home-logo">AICX認定</div>
+    <h1>AIエージェント・ストラテジスト</h1>
+    <div class="home-sub">試験対策演習アプリ v1.0 &nbsp;|&nbsp; <span id="home-total-q">0</span>問収録</div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">総回答数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-acc">—</div>
+        <div class="stat-label">正答率</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-streak">0</div>
+        <div class="stat-label">連続学習日</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-due" style="color:var(--accent)">0</div>
+        <div class="stat-label">今日の復習</div>
+      </div>
+    </div>
+
+    <div class="stats-row" style="margin-bottom:32px">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-new">0</div>
+        <div class="stat-label" style="color:var(--muted)">未学習</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-learning" style="color:var(--warning)">0</div>
+        <div class="stat-label">習得中</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-review" style="color:#4A6FA5">0</div>
+        <div class="stat-label">定着中</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-mastered" style="color:var(--success)">0</div>
+        <div class="stat-label">習熟済み</div>
+      </div>
+    </div>
+
+    <div class="section-title">モード選択</div>
+    <div class="mode-grid mode-grid-wide">
+      <div class="mode-card" id="reviewcard" onclick="startMode('review')">
+        <div class="mode-icon">🔁</div>
+        <div class="mode-title">今日の復習</div>
+        <div class="mode-desc">SRS期限が来た問題を優先演習</div>
+      </div>
+      <div class="mode-card" onclick="startMode('interleave')">
+        <div class="mode-icon">🔀</div>
+        <div class="mode-title">インターリーブ</div>
+        <div class="mode-desc">全章混合・記憶定着に最も効く</div>
+      </div>
+      <div class="mode-card" onclick="startMode('diagnostic')">
+        <div class="mode-icon">🎯</div>
+        <div class="mode-title">診断テスト</div>
+        <div class="mode-desc">全6章から30問・弱点を客観特定</div>
+      </div>
+      <div class="mode-card" onclick="startMode('mock')">
+        <div class="mode-icon">⏱</div>
+        <div class="mode-title">75分模試</div>
+        <div class="mode-desc">本番形式・60問・タイマー付き</div>
+      </div>
+      <div class="mode-card" id="weakcard" onclick="startMode('weak')">
+        <div class="mode-icon">📌</div>
+        <div class="mode-title">弱点復習</div>
+        <div class="mode-desc">誤答した問題を再演習</div>
+      </div>
+      <div class="mode-card" onclick="showStats()">
+        <div class="mode-icon">📊</div>
+        <div class="mode-title">学習統計</div>
+        <div class="mode-desc">問題別正答履歴・進捗確認</div>
+      </div>
+    </div>
+
+    <div class="section-title">章別ドリル</div>
+    <div class="ch-grid" id="ch-grid"></div>
+  </div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-wrap">
+    <div class="quiz-header">
+      <button class="quiz-back" onclick="goHome()">← ホームへ</button>
+      <div id="quiz-mode-label" style="font-size:12px;color:var(--muted)"></div>
+      <div id="quiz-timer" class="quiz-timer" style="display:none">75:00</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar" style="width:0%"></div></div>
+      <div class="progress-meta">
+        <span id="q-counter">問 1 / 30</span>
+        <span id="q-score-live">正答: 0</span>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-badges">
+        <span class="q-badge" id="q-chapter-badge">Ch01</span>
+        <span class="q-badge section" id="q-section-badge">セクション</span>
+        <span class="stage-badge stage-new" id="q-stage-badge">NEW</span>
+      </div>
+      <div class="q-text" id="q-text">問題文</div>
+      <div class="confidence-area" id="confidence-area">
+        <div class="conf-label">自信度</div>
+        <div class="conf-buttons">
+          <button class="conf-btn" id="conf-1" onclick="setConfidence(1)">😰<span>わからない</span></button>
+          <button class="conf-btn" id="conf-2" onclick="setConfidence(2)">🤔<span>うろ覚え</span></button>
+          <button class="conf-btn" id="conf-3" onclick="setConfidence(3)">😐<span>たぶん</span></button>
+          <button class="conf-btn" id="conf-4" onclick="setConfidence(4)">😊<span>確信あり</span></button>
+        </div>
+      </div>
+      <div class="hint-area" id="hint-area" style="display:none">
+        <button class="hint-toggle" id="hint-toggle" onclick="toggleHint()">💡 用語ヒントを見る</button>
+        <div class="hint-box" id="hint-box"></div>
+      </div>
+      <div class="choices" id="choices"></div>
+      <div class="srs-next" id="srs-next"></div>
+      <div class="explanation-box" id="exp-box">
+        <div id="exp-wrong-layer" class="exp-wrong-layer" style="display:none">
+          <div class="exp-label wrong">❌ あなたの選択</div>
+          <div class="exp-chosen-text" id="exp-chosen-text"></div>
+        </div>
+        <div id="exp-correct-layer" class="exp-correct-layer">
+          <div class="exp-label correct" id="exp-correct-label">✅ 正解</div>
+          <div class="exp-correct-text" id="exp-correct-text"></div>
+        </div>
+        <div class="exp-main-layer">
+          <div class="exp-label main">解説</div>
+          <div class="exp-text" id="exp-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-actions">
+      <button class="btn btn-ghost" id="btn-skip" onclick="skipQuestion()" style="display:none">スキップ</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" style="display:none">次の問題 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-wrap">
+    <div style="margin-bottom:20px">
+      <div style="font-size:20px;font-weight:700" id="result-title">結果</div>
+    </div>
+    <div class="result-score">
+      <div class="score-circle" id="score-circle">0%</div>
+      <div class="score-label" id="score-label">0 / 0 問正解</div>
+      <div id="score-verdict" style="font-size:14px;font-weight:600"></div>
+    </div>
+
+    <div class="section-title">章別スコア</div>
+    <div class="result-ch-breakdown" id="ch-breakdown"></div>
+
+    <div class="result-actions" style="margin-bottom:28px">
+      <button class="btn btn-primary" onclick="reviewWrong()" id="btn-review-wrong">誤答を確認する</button>
+      <button class="btn btn-ghost" onclick="goHome()">ホームへ</button>
+    </div>
+
+    <div id="review-section" style="display:none">
+      <div class="section-title">誤答一覧</div>
+      <div class="result-review-list" id="review-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATS ===== -->
+<div id="screen-stats" class="screen">
+  <div class="stats-wrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <button class="btn btn-ghost" onclick="goHome()">← 戻る</button>
+      <div style="font-size:18px;font-weight:700">学習統計</div>
+    </div>
+    <div class="streak-banner">
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px">連続学習日</div>
+      <div class="streak-num" id="stats-streak">0</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">日</div>
+    </div>
+    <div class="stats-row" style="margin-bottom:28px">
+      <div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-label">総回答</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-correct">0</div><div class="stat-label">正解</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-acc">—</div><div class="stat-label">正答率</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-sessions">0</div><div class="stat-label">セッション数</div></div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:12px">問題別正答履歴（直近5回）</div>
+    <div class="q-accuracy-list" id="q-acc-list"></div>
+
+    <div style="margin-top:24px">
+      <button class="btn btn-ghost" onclick="if(confirm('学習データをリセットしますか？'))resetData()" style="font-size:12px;color:var(--error)">データをリセット</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// AIエージェント・ストラテジスト 問題バンク
+// 出典：AICX認定公式テキスト ver.2（テキスト抽出 + 章別補強生成）
+
+// AIエージェント・ストラテジスト 問題バンク
+// 出典：AICX認定公式テキスト ver.2（テキスト抽出 + 章別補強生成）
+
+const QUESTIONS = [
+{
+"id": 1001,
+"chapter": "Ch01",
+"section": "タスクの性質とモデル構成",
+"diagnostic": true,
+"question": "ある企業がカスタマーサポート業務にAIを導入しようとしています。この業務には「問い合わせ内容をカテゴリに分類する処理」と「顧客の状況に応じた回答文を生成する処理」が含まれます。これらの処理の性質と、モデル構成の方針として最も適切なものはどれですか。",
+"choices": {
+"A": "分類処理は識別的な性質、回答生成は生成的な性質であり、それぞれ別の専用AIシステムを構築すべきである",
+"B": "分類処理は識別的な性質、回答生成は生成的な性質であるが、現在の実務ではどちらもLLMで処理し、タスクの難易度に応じてモデルのグレードを使い分けるのが一般的である",
+"C": "どちらも生成的な処理であるため、同一の高性能モデルですべてを処理すべきである",
+"D": "どちらも識別的な処理であるため、従来型の識別AIで十分対応できる"
+},
+"correct": "B",
+"explanation": "正解：B｜分類は識別的な性質、回答生成は生成的な性質です。ただし、処理の性質と実装方式は別の話です。現在の実務ではLLMが分類処理も高精度にこなせるため、両方をLLMで処理し、分類には軽量モデル、回答生成には高性能モデルを割り当てるモデルルーティングが一般的です。Aは別々の専用システムを構築するのは開発・保守コストが過大です。　📖 出典：公式テキスト p.23",
+"sourcePage": 23,
+"sourceKind": "official",
+"hint": [
+{
+"en": "LLM",
+"ja": "大規模言語モデル",
+"def": "大量のテキストデータを学習し、テキスト生成・推論・要約などを行うAIモデル"
+},
+{
+"en": "model routing",
+"ja": "モデルルーティング",
+"def": "タスクの難易度に応じてLLMのグレードを使い分ける設計パターン"
+}
+]
+},
+{
+"id": 1002,
+"chapter": "Ch01",
+"section": "AIエージェントの三位一体",
+"diagnostic": true,
+"question": "ある企業がAIエージェントを導入しました。このエージェントはLLMで顧客の問い合わせを理解し、社内FAQデータベースから関連情報を検索して回答を生成しますが、回答の送信は担当者が手動でメールにコピー＆ペーストして行っています。この状況の説明として最も適切なものはどれですか。",
+"choices": {
+"A": "三位一体の構成要素がすべて揃っており、AIエージェントとして完成している",
+"B": "頭脳と記憶は備えているが、手足が欠けている",
+"C": "記憶が欠けているため、回答精度が低く実用に耐えない"
+},
+"correct": "B",
+"explanation": "正解：B｜LLMによる理解・回答生成が頭脳、FAQデータベースの参照が記憶にあたります。しかしメール送信などの外部システム操作にあたる手足が欠けています。手足がなければ担当者の手動作業が残り、AIエージェントとしての自動化は不完全です。　📖 出典：公式テキスト p.32",
+"sourcePage": 32,
+"sourceKind": "official",
+"hint": [
+{
+"en": "three-in-one model",
+"ja": "三位一体モデル",
+"def": "AIエージェントを「頭脳（LLM）・記憶（ナレッジベース）・手足（ツール連携）」の3要素で捉えるフレームワーク"
+}
+]
+},
+{
+"id": 1003,
+"chapter": "Ch01",
+"section": "AIエージェントの起動タイプ",
+"diagnostic": true,
+"question": "営業部のAIエージェントについて、以下の3つの動作がそれぞれどの起動タイプに該当するか、正しい組み合わせはどれですか。X：営業担当者がチャットで「A社の提案書のドラフトを作って」と依頼する Y：毎週月曜の朝9時に、先週の商談進捗レポートを自動生成して全員に配信する Z：CRMに新規リードが登録されたタイミングで、自動的にウェルカムメールのドラフトを作成する",
+"choices": {
+"A": "X=指示型, Y=定時型, Z=条件型",
+"B": "X=条件型, Y=定時型, Z=条件型",
+"C": "X=指示型, Y=条件型, Z=定時型",
+"D": "X=指示型, Y=定時型, Z=指示型"
+},
+"correct": "A",
+"explanation": "正解：A｜Xは営業担当者がAIエージェントに直接依頼しており指示型です。Yは毎週月曜朝9時という固定スケジュールで動くため定時型です。ZはCRMへの新規リード登録というシステム上のイベントがきっかけであり条件型です。Dが紛らわしいですが、Zは「営業担当者がリードを登録した」行為がAIエージェントへの指示ではなくCRMへのデータ登録であり、条件型と区別されます。　📖 出典：公式テキスト p.39",
+"sourcePage": 39,
+"sourceKind": "official",
+"hint": [
+{
+"en": "trigger type",
+"ja": "起動タイプ",
+"def": "AIエージェントが動き出すきっかけの分類。指示型・定時型・条件型の3種類がある"
+}
+]
+},
+{
+"id": 1004,
+"chapter": "Ch01",
+"section": "RPAとAIエージェントの使い分け",
+"diagnostic": true,
+"question": "以下の4つの業務タスクのうち、ルールベースの自動化ではなくAIエージェントによる処理が必要なものはどれですか。",
+"choices": {
+"A": "毎月末に全社員のライセンス期限をチェックし、更新対象者にリマインドメールを送信する",
+"B": "顧客からの自由記述のクレームメールを読み取り、緊急度を判定して対応部署に振り分ける",
+"C": "毎日の売上データをCSVファイルから基幹システムに転記する",
+"D": "新入社員のアカウントを、マニュアルの手順通りに5つのシステムで一括作成する"
+},
+"correct": "B",
+"explanation": "正解：B｜クレームメールは自然言語で書かれた非構造化データであり、緊急度の判定には文脈理解と総合的な判断が必要です。「ただちに対応が必要な怒りのクレーム」と「改善要望レベルのフィードバック」を見分けるのは、ルールベースの自動化では困難です。A・C・Dはいずれも手順が完全に定義でき判断が不要な定型業務であり、ルールベースの自動化で十分です。　📖 出典：公式テキスト p.49",
+"sourcePage": 49,
+"sourceKind": "official",
+"hint": [
+{
+"en": "rule-based automation",
+"ja": "ルールベースの自動化",
+"def": "あらかじめ決めた手順・条件に従って処理を実行する自動化の仕組み（RPAなど）"
+},
+{
+"en": "unstructured data",
+"ja": "非構造化データ",
+"def": "メール・議事録・チャットなど、行と列で整理されていないデータ"
+}
+]
+},
+{
+"id": 1005,
+"chapter": "Ch01",
+"section": "MCP（エージェントの接続標準）",
+"diagnostic": true,
+"question": "AIエージェントの外部ツール接続に関する記述として、最も適切なものはどれですか。",
+"choices": {
+"A": "MCPはAPIを完全に置き換える新しい技術であり、MCPを導入すればAPIは不要になる",
+"B": "MCPは接続の標準化とツール選択の自動化を実現する共通規格であり、APIの上に共通のフォーマットを被せる形で機能する",
+"C": "MCPとAPIはまったく同じ概念の別名である",
+"D": "接続先が何個あっても、個別API連携のほうがMCPより常に効率的である"
+},
+"correct": "B",
+"explanation": "正解：B｜MCPはAPIを置き換えるのではなく、APIの上に共通規格を被せるものです。MCPの価値は、接続の標準化によるM×N問題の解消と、LLMによるツール選択の自動化の2点です。Dは接続先やモデルの数が増えるほど個別APIの保守コストが膨らむため、常に効率的とは言えません。　📖 出典：公式テキスト p.59",
+"sourcePage": 59,
+"sourceKind": "official",
+"hint": [
+{
+"en": "MCP",
+"ja": "Model Context Protocol",
+"def": "AIエージェントと外部ツールの接続を共通規格で統一する仕組み。2024年11月にAnthropicがオープン標準として公開"
+},
+{
+"en": "M×N problem",
+"ja": "M×N問題",
+"def": "M個のAIモデルとN個の外部ツールを個別接続すると組み合わせ数だけ開発が必要になる問題"
+}
+]
+},
+{
+"id": 1006,
+"chapter": "Ch01",
+"section": "AIエージェント導入の価値（定量・定性）",
+"diagnostic": true,
+"question": "AIエージェント導入のメリットのうち、「定性的メリット」に該当するものはどれですか。",
+"choices": {
+"A": "月間75時間の工数削減",
+"B": "年間511万円の人件費削減",
+"C": "24時間365日の即時対応による顧客体験の向上",
+"D": "投資回収期間7ヶ月"
+},
+"correct": "C",
+"explanation": "正解：C｜A・B・Dはいずれも数値で測定できる定量的メリットです。Cの「顧客体験の向上」は重要ですが直接的に金額換算しにくい定性的メリットに該当します。投資判断の質を高めるには、定量・定性の両面から評価することが欠かせません。　📖 出典：公式テキスト p.68",
+"sourcePage": 68,
+"sourceKind": "official",
+"hint": [
+{
+"en": "qualitative merit",
+"ja": "定性的メリット",
+"def": "数値化しにくいが組織にとって重要な価値（顧客体験向上・従業員体験向上など）"
+},
+{
+"en": "quantitative merit",
+"ja": "定量的メリット",
+"def": "数値で測定できる価値（工数削減・費用削減・エラー率低下など）"
+}
+]
+},
+{
+"id": 1007,
+"chapter": "Ch01",
+"section": "AIエージェントのリスク分類",
+"diagnostic": true,
+"question": "以下の3つのリスクシナリオを、正しいリスクカテゴリに分類してください。X：AIエージェントが、実際には存在しない社内規定を引用して回答した Y：AIエージェントを導入したが、現場の担当者の大半が利用をやめてしまった Z：各部門が独自にAIエージェントを構築し、IT部門が全体の状況を把握できていない",
+"choices": {
+"A": "X=形骸化リスク, Y=信頼性リスク, Z=ブラックボックス化リスク",
+"B": "X=信頼性リスク, Y=形骸化リスク, Z=セキュリティ/倫理リスク",
+"C": "X=信頼性リスク, Y=形骸化リスク, Z=ブラックボックス化リスク",
+"D": "X=セキュリティ/倫理リスク, Y=ブラックボックス化リスク, Z=形骸化リスク"
+},
+"correct": "C",
+"explanation": "正解：C｜Xは「AIエージェントが間違えた」ため信頼性リスクです。Yは「人が使わない」ため形骸化リスクです。Zは「誰も管理していない」ためブラックボックス化リスクです。Bが紛らわしいですが、Zは「悪意・偏り・倫理」の問題ではなく「管理体制の不在」の問題であり、ブラックボックス化リスクに分類されます。　📖 出典：公式テキスト p.79",
+"sourcePage": 79,
+"sourceKind": "official",
+"hint": [
+{
+"en": "hallucination",
+"ja": "ハルシネーション",
+"def": "AIが事実ではない情報をあたかも正しいかのように生成してしまう現象"
+},
+{
+"en": "black-box risk",
+"ja": "ブラックボックス化リスク",
+"def": "AIエージェントが組織内で十分に管理されないまま増え、誰が何を管理しているか分からなくなるリスク"
+}
+]
+},
+{
+"id": 1008,
+"chapter": "Ch01",
+"section": "SLMの特徴",
+"diagnostic": true,
+"question": "SLMの特徴として、誤っている記述はどれですか。",
+"choices": {
+"A": "LLMに比べてコストが大幅に低く、デバイス上で直接動作できる",
+"B": "自社の業務データでファインチューニングし、業界特化のモデルを構築しやすい",
+"C": "LLMと同等の精度であらゆるタスクに対応できるため、LLMは不要になる",
+"D": "クラウドへのAPI課金が発生しないため、運用コスト削減に寄与する"
+},
+"correct": "C",
+"explanation": "正解：C｜SLMはLLMに比べて精度がやや劣る傾向があり、「あらゆるタスクに対応できる」わけではありません。複雑な推論や高度な文章生成にはLLMが依然として有効です。タスクの難易度に応じてSLMとLLMを使い分ける設計が重要です。A・B・DはいずれもSLMの正しい特徴です。　📖 出典：公式テキスト p.90",
+"sourcePage": 90,
+"sourceKind": "official",
+"hint": [
+{
+"en": "SLM",
+"ja": "小型言語モデル（Small Language Model）",
+"def": "LLMより小さく・速く・低コストで動作するAIモデル。デバイス上での動作やファインチューニングに適する"
+}
+]
+},
+{
+"id": 1051,
+"chapter": "Ch01",
+"section": "生成AIの定義と特徴",
+"diagnostic": true,
+"question": "生成AI（Generative AI）の説明として最も適切なものはどれですか。",
+"choices": {
+"A": "画像認識や音声認識に特化したAIであり、新しいコンテンツを生み出すことはできない",
+"B": "データのパターンや関係を学習し、テキスト・画像・音声などの新しい出力を生成できるAI",
+"C": "人間のルールをそのままプログラムすることで動作するルールベースのシステム",
+"D": "入力されたデータを既存のカテゴリに分類することのみを目的とするAI"
+},
+"correct": "B",
+"explanation": "生成AIは入力された内容をもとにテキストや画像などの様々な出力を生み出せるAIです。従来の識別・予測型AIと異なり、データのパターンや関係を学習し、新しいコンテンツを生成できる点が最大の特徴です。　📖 出典：公式テキスト p.13",
+"sourcePage": 13,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "Generative AI",
+"ja": "生成AI",
+"def": "データを学習し、テキスト・画像・音声・動画などの新しいコンテンツを生成できるAI"
+}
+]
+},
+{
+"id": 1052,
+"chapter": "Ch01",
+"section": "生成AIの構造的なインパクト",
+"diagnostic": false,
+"question": "生成AIが従来のDXと比較して最も革新的なインパクトをもたらした点はどれですか。",
+"choices": {
+"A": "売上データや顧客リストのような構造化データを高速に処理できるようになったこと",
+"B": "議事録・企画書・社内チャットのような非構造化データを処理できるようになったこと",
+"C": "AIのコストが下がり、中小企業でも導入しやすくなったこと",
+"D": "インターネット上の情報をリアルタイムで検索できるようになったこと"
+},
+"correct": "B",
+"explanation": "生成AIの最大のインパクトは「非構造化データの活用」です。従来のDXでは行と列で整理された構造化データが中心でしたが、生成AIにより議事録・企画書・社内チャットのような非構造化データも処理できるようになりました。企業に眠っているデータの8割以上は非構造化データだと言われています。　📖 出典：公式テキスト p.14",
+"sourcePage": 14,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "unstructured data",
+"ja": "非構造化データ",
+"def": "議事録・企画書・チャットなど、行と列で整理されていないデータ。企業データの8割以上を占めるとされる"
+}
+]
+},
+{
+"id": 1053,
+"chapter": "Ch01",
+"section": "ハルシネーション",
+"diagnostic": true,
+"question": "AIのハルシネーション（Hallucination）に関する説明として最も適切なものはどれですか。",
+"choices": {
+"A": "AIが意図的に嘘をついて、ユーザーを騙そうとする現象",
+"B": "AIが確率的にもっともらしい言葉をつなぎ合わせた結果、事実に基づかない内容を生成してしまう構造的な特性",
+"C": "AIが過去に学習した古い情報をそのまま出力してしまう現象",
+"D": "AIがユーザーの質問を誤解して、まったく関係ない回答をしてしまう現象"
+},
+"correct": "B",
+"explanation": "ハルシネーションはAIが「正しいことを言う」のではなく「次に来るものを選ぶ」仕組みで動いているため、知らないことを「知らない」と言う代わりに、もっともらしい言葉をつなぎ合わせてしまうことで生じます。これはAIの欠陥ではなく、現在の言語モデルが持つ構造的な特性です。　📖 出典：公式テキスト p.17",
+"sourcePage": 17,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "hallucination",
+"ja": "ハルシネーション（幻覚）",
+"def": "AIが事実ではない情報を、あたかも正しいかのように自信満々に生成してしまう現象"
+}
+]
+},
+{
+"id": 1054,
+"chapter": "Ch01",
+"section": "トークンとコスト管理",
+"diagnostic": false,
+"question": "AIエージェントのAPI費用を見積もる際、ストラテジストが把握すべき最も重要な考え方はどれですか。",
+"choices": {
+"A": "LLMのAPI費用は月額固定であるため、処理件数に関わらず一定である",
+"B": "LLMのAPI費用はトークン数に応じた従量課金であるため、「1回の処理あたりのトークン消費量」と「月間の処理件数」から見積もる",
+"C": "API費用がAIエージェントの総コストの大半を占めるため、API費用の見積もりだけで投資判断できる",
+"D": "API費用は技術的な詳細であり、ストラテジストが把握する必要はない"
+},
+"correct": "B",
+"explanation": "LLMのAPI利用料はトークン数に応じた従量課金です。「1回あたりどれだけのトークンを消費し、月間でいくらかかるか」を見積もれることがストラテジストの基本スキルです。Cは実態としてAPI費用はコスト全体のごく一部であり、構築費やランニングコストを含めたTCOで判断する必要があります。　📖 出典：公式テキスト p.18",
+"sourcePage": 18,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "token",
+"ja": "トークン",
+"def": "LLMがテキストを処理する最小単位。英語では1単語≒1トークン、日本語では1〜数文字で1トークン"
+},
+{
+"en": "TCO",
+"ja": "総所有コスト（Total Cost of Ownership）",
+"def": "API費用・構築費・保守費・人件費など、導入から運用までの総コスト"
+}
+]
+},
+{
+"id": 1055,
+"chapter": "Ch01",
+"section": "RAGとコンテキストウィンドウ",
+"diagnostic": false,
+"question": "社内マニュアル約75,000トークンをAIエージェントに参照させる設計として、最も適切なものはどれですか。",
+"choices": {
+"A": "現在のLLMはコンテキストウィンドウが大幅に拡大しているため、毎回マニュアル全文をプロンプトに含める設計が最適である",
+"B": "マニュアル全文をプロンプトに含めると1回あたりのトークン消費が増大するため、RAGで関連箇所だけを検索・抽出して渡す設計が適切である",
+"C": "コスト削減のため、マニュアルの内容を要約して短くしたものだけをAIエージェントに参照させるべきである",
+"D": "マニュアルの参照は不要であり、LLMの事前学習で獲得した一般知識だけで業務に対応できる"
+},
+"correct": "B",
+"explanation": "コンテキストウィンドウに収まるからといって毎回全文を渡すと、月間コストが数倍に膨らみます。RAGで関連箇所だけを検索・抽出する設計が、コストと精度を両立させる現実的な選択です。Cは要約によって重要な詳細情報が失われるリスクがあります。Dは社内固有の情報はLLMの事前学習に含まれていないため不可欠です。　📖 出典：公式テキスト p.19",
+"sourcePage": 19,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "RAG",
+"ja": "検索拡張生成（Retrieval-Augmented Generation）",
+"def": "AIエージェントが回答する前に関連ドキュメントを検索し、その内容を参照して回答を生成する技術"
+},
+{
+"en": "context window",
+"ja": "コンテキストウィンドウ",
+"def": "LLMに一度に渡せるトークンの上限量"
+}
+]
+},
+{
+"id": 1056,
+"chapter": "Ch01",
+"section": "AIエージェントの自律性レベル",
+"diagnostic": true,
+"question": "ヘルプデスクAIの導入方式として、次の2つの案が提案されています。案Aと案Bの自律性レベルの組み合わせとして最も適切なものはどれですか。案A：すべての問い合わせに対してAIエージェントが回答案を生成し、担当者が内容を確認してから送信する 案B：定型的な問い合わせにはAIエージェントが自動で回答を送信し、複雑な問い合わせのみ担当者に引き継ぐ",
+"choices": {
+"A": "案A＝反応型、案B＝自律型",
+"B": "案A＝支援型、案B＝協働型",
+"C": "案A＝協働型、案B＝自律型",
+"D": "案A＝支援型、案B＝自律型"
+},
+"correct": "B",
+"explanation": "案Aは、AIエージェントが回答案を生成するものの最終的な送信判断は必ず人間が行っており、支援型です。案Bは、定型的な問い合わせについてはAIエージェントが判断から送信まで自律的に行い、複雑な問い合わせだけ人間に委ねており、協働型です。分けるポイントは「AIエージェントが最終判断を含む意思決定を行っているかどうか」です。　📖 出典：公式テキスト p.34",
+"sourcePage": 34,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "autonomy level",
+"ja": "自律性レベル",
+"def": "AIエージェントがどこまで自律的に動くかの段階。反応型・支援型・協働型・自律型の4段階がある"
+}
+]
+},
+{
+"id": 1057,
+"chapter": "Ch01",
+"section": "不可逆な判断と設計",
+"diagnostic": false,
+"question": "AIエージェントの設計において、「何を任せないか」を判断する基準として本文で示されているものはどれですか。",
+"choices": {
+"A": "処理速度が遅い業務はAIエージェントに任せない",
+"B": "専門知識が必要な業務はAIエージェントに任せない",
+"C": "やり直しがきくかどうか。不可逆な操作を伴う業務は必ず人間の確認を挟む",
+"D": "コストが高い処理はAIエージェントに任せない"
+},
+"correct": "C",
+"explanation": "本文では「判断基準は『やり直しがきくかどうか』です」と明示されています。退職者のアカウント削除などの不可逆な操作を伴う業務は、自律性レベルに関わらず、必ず人間の確認を挟む設計にするべきです。全社通知の発信のような取り消しが困難な業務も同様です。　📖 出典：公式テキスト p.30",
+"sourcePage": 30,
+"sourceKind": "derived",
+"hint": []
+},
+{
+"id": 1058,
+"chapter": "Ch01",
+"section": "ハイパーオートメーション",
+"diagnostic": false,
+"question": "ハイパーオートメーションに関する記述として、最も適切なものはどれですか。",
+"choices": {
+"A": "RPAをAIエージェントに完全に置き換えるアプローチである",
+"B": "定型処理の正確さとAIエージェントの柔軟な判断を組み合わせ、業務プロセス全体を自動化するアプローチである",
+"C": "AIエージェントがRPAの動作を自律的に設計・管理するアプローチである",
+"D": "すべての処理をAIエージェントに任せることで、定型処理も含めて精度を高めるアプローチである"
+},
+"correct": "B",
+"explanation": "ハイパーオートメーションは定型処理とAIエージェントの「組み合わせ」であり、置き換えではありません。各ステップの性質を見極め、定型処理が得意な部分にはルールベースの自動化を、判断が必要な部分にはAIエージェントを割り当てます。すべてをAIエージェントに任せると定型処理にまでハルシネーションのリスクを持ち込むことになります。　📖 出典：公式テキスト p.45",
+"sourcePage": 45,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "hyper automation",
+"ja": "ハイパーオートメーション",
+"def": "業務プロセスの各ステップを「定型処理」と「AI処理」に切り分け、それぞれに最適な技術を割り当てるアプローチ"
+}
+]
+},
+{
+"id": 1059,
+"chapter": "Ch01",
+"section": "MCPとM×N問題",
+"diagnostic": false,
+"question": "MCPが解決する「M×N問題」の説明として正しいものはどれですか。",
+"choices": {
+"A": "M人のユーザーとN個のAIモデルを効率的にマッチングする問題",
+"B": "M個のAIモデルとN個の外部ツールを個別に接続しようとすると、組み合わせの数だけ連携処理が必要になる問題",
+"C": "M個のデータソースからN個のレポートを自動生成する問題",
+"D": "M種類のプログラミング言語でN種類のAPIを呼び出す問題"
+},
+"correct": "B",
+"explanation": "M×N問題とは、M個のAIモデルとN個の外部ツールを個別に接続しようとすると、組み合わせの数だけ連携処理が必要になる問題です。たとえばAIモデルが3種類、接続先が5種類なら3×5=15通りの接続が必要です。MCPにより各AIと各ツールがMCPに対応するだけでよくなり、15通りが3+5=8通りで済みます。　📖 出典：公式テキスト p.54",
+"sourcePage": 54,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "M×N problem",
+"ja": "M×N問題",
+"def": "AIモデルM個と外部ツールN個を個別接続すると最大M×N通りの開発・保守が必要になる問題"
+}
+]
+},
+{
+"id": 1060,
+"chapter": "Ch01",
+"section": "ROIとTCO",
+"diagnostic": false,
+"question": "AIエージェントのROI試算に関する記述として、最も適切なものはどれですか。",
+"choices": {
+"A": "ROIが高ければ、定性的メリットやリスクを考慮せずに導入を決定してよい",
+"B": "TCOにはLLMのAPI利用料だけを含めればよい",
+"C": "ROIの定量評価に加え、定性的メリットとリスクも含めた総合的な判断が必要である",
+"D": "初期構築費用が高い場合は、ROIに関わらず導入を見送るべきである"
+},
+"correct": "C",
+"explanation": "投資判断はROIの数字だけで完結させず、定性的メリットとリスクの両面を加味して総合的に評価する必要があります。BはTCOにはAPI利用料だけでなく、初期構築費・ナレッジベースの更新・プロンプト改善の工数・監視保守の人件費なども含まれます。Dは初期費用だけを見た判断であり、ROI全体で見れば投資回収可能なケースを見逃します。　📖 出典：公式テキスト p.63",
+"sourcePage": 63,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "ROI",
+"ja": "投資対効果（Return on Investment）",
+"def": "投じたお金に対してどれだけのリターンが得られたかを示す指標"
+},
+{
+"en": "TCO",
+"ja": "総所有コスト（Total Cost of Ownership）",
+"def": "API費用・構築費・ナレッジ整備・保守費など導入から運用までの総コスト"
+}
+]
+},
+{
+"id": 1061,
+"chapter": "Ch01",
+"section": "プロンプトインジェクション",
+"diagnostic": false,
+"question": "プロンプトインジェクションへの対策として、本文が示す最も適切な考え方はどれですか。",
+"choices": {
+"A": "入力内容のフィルタリングだけで完全に防ぐことができる",
+"B": "出力内容の制御だけで十分であり、入力チェックは不要である",
+"C": "攻撃手法は変化し続けるため、入力チェック・出力制御・アクセス権管理を組み合わせた多層的な対策が必要である",
+"D": "LLMをより高性能なモデルに変更すれば自然に解消される"
+},
+"correct": "C",
+"explanation": "プロンプトインジェクションの攻撃手法は変化し続けるため、入力だけを防げば十分とは限りません。そのため、入力の検査、出力の制限、アクセス権の管理などを組み合わせた多層的な対策が求められます。入力フィルタリングだけに依存することは適切ではありません。　📖 出典：公式テキスト p.75",
+"sourcePage": 75,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "prompt injection",
+"ja": "プロンプトインジェクション",
+"def": "悪意のある入力によってAIエージェントの動作を本来の意図とは異なる方向へ誘導しようとする攻撃手法"
+}
+]
+},
+{
+"id": 1062,
+"chapter": "Ch01",
+"section": "生成AIの発展トレンド",
+"diagnostic": false,
+"question": "生成AIの発展トレンドとして「ドメイン特化」の説明として最も適切なものはどれですか。",
+"choices": {
+"A": "AIモデルのパラメータ数を増やして、あらゆる分野の知識を広げること",
+"B": "RAG・ファインチューニング・パーソナライズ・検索連携などの手段で、AIに特定の分野や業務に合わせた専門性を持たせること",
+"C": "複数のAIモデルを組み合わせることで、処理速度を向上させること",
+"D": "クラウドではなくデバイス上でAIを動作させることで、データを外部に送らないこと"
+},
+"correct": "B",
+"explanation": "ドメイン特化とは、AIに「専門家としての深さ」を持たせる動きです。その手段は4つあります：RAG（関連データベースをリアルタイム参照）、ファインチューニング（特定知識を追加学習）、パーソナライズ（利用者ごとに回答調整）、検索連携（最新情報を取得して回答）。汎用AIだけでは対応できない専門領域への対応力を高めます。　📖 出典：公式テキスト p.84",
+"sourcePage": 84,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "domain specialization",
+"ja": "ドメイン特化",
+"def": "特定の業界・職種・企業の業務に合わせてAIをカスタマイズし、専門的な知識・判断力を持たせること"
+},
+{
+"en": "fine-tuning",
+"ja": "ファインチューニング",
+"def": "特定の知識やスタイルをAIに追加学習させる手法"
+}
+]
+},
+{
+"id": 2001,
+"chapter": "Ch02",
+"section": "Section1 業務の構造的理解",
+"diagnostic": true,
+"question": "ある企業がAIエージェントの導入を検討しています。プロジェクトリーダーが最初に「AIエージェントで実現したい理想の業務フロー」を描き、それに合わせてシステムを構築しました。しかし導入後、現場から「実際の業務と合っていない」「使いにくい」という声が相次ぎ、利用率が低迷しています。この失敗の最も根本的な原因はどれですか。",
+"choices": {
+"A": "選定したLLMの性能が不足していた",
+"B": "現状の業務を正確に把握しないまま理想像を先に設計してしまった",
+"C": "プロジェクトの予算が不足していた",
+"D": "現場担当者へのトレーニングが不足していた"
+},
+"correct": "B",
+"explanation": "正解：B｜As-Isの現状業務を十分に把握しないまま、理想の業務フローを先に設計したことにあります。その結果、現場の実態や例外処理、実際の運用負荷が設計に反映されず、導入後に「業務と合わない」「使いにくい」という問題が生じています。A、C、Dも導入失敗の要因にはなり得ますが、本事例で示されている問題は、技術や教育よりも前段階の現状分析にあります。　📖 出典：公式テキスト p.107",
+"sourcePage": 107,
+"sourceKind": "official",
+"hint": [
+{
+"en": "As-Is analysis",
+"ja": "As-Is分析",
+"def": "業務の現在の姿をIPOの構造に沿って正確に記録する分析手法"
+},
+{
+"en": "To-Be analysis",
+"ja": "To-Be分析",
+"def": "AIエージェント導入後のあるべき業務フローを設計する手法"
+}
+]
+},
+{
+"id": 2002,
+"chapter": "Ch02",
+"section": "Section2 BPR（業務改革）の基礎",
+"diagnostic": true,
+"question": "ある企業が受注処理業務にAIエージェントを導入しました。しかし導入後、「処理のスピードは上がったが、そもそも不要だった承認ステップまで自動化されており、全体の工数はあまり変わっていない」という状況が発生しています。この問題の最も根本的な原因はどれですか。",
+"choices": {
+"A": "AIエージェントの性能が不足していた",
+"B": "現状の業務プロセスを最適化せずに、非効率なフローをそのまま自動化してしまった",
+"C": "導入時のトレーニングが不足していた",
+"D": "自動化する業務の範囲が狭すぎた"
+},
+"correct": "B",
+"explanation": "正解：B｜これは「汚いプロセスの自動化」の罠の典型例です。不要な承認ステップを排除せずにそのままAIエージェントで自動化したため、非効率が高速に回るだけの状態になっています。正しい手順は、As-Is分析の後にECRSでプロセスを最適化し、最適化されたプロセスに対してTo-Beを設計することです。Dの「範囲が狭い」は逆で、不要な工程まで自動化の範囲に含めてしまったことが問題です。　📖 出典：公式テキスト p.117",
+"sourcePage": 117,
+"sourceKind": "official",
+"hint": [
+{
+"en": "Automating a Dirty Process",
+"ja": "汚いプロセスの自動化",
+"def": "非効率なプロセスをそのまま自動化することで、非効率を高速に繰り返す装置を作ってしまう失敗パターン"
+},
+{
+"en": "ECRS",
+"ja": "ECRS",
+"def": "Eliminate（排除）・Combine（結合）・Rearrange（順序変更）・Simplify（簡素化）の頭字語。BPRを実務で進めるフレームワーク"
+}
+]
+},
+{
+"id": 2003,
+"chapter": "Ch02",
+"section": "Section3 業務可視化の手法",
+"diagnostic": false,
+"question": "あるプロジェクトの立ち上げ初日、担当者が「まずこの業務の入力と出力を、自分の中で整理しておきたい」と言いました。この目的に最も適した手法はどれですか。",
+"choices": {
+"A": "SIPOC分析で関係者も含めた5要素を整理する",
+"B": "HTAで業務をアトミック・タスクまで分解する",
+"C": "IPOモデルで入力・処理・出力の3要素を書き出す",
+"D": "業務フロー図でスイムレーンを描いてチームに共有する"
+},
+"correct": "C",
+"explanation": "正解：C｜「自分の中で入力と出力を整理したい」という目的にはIPOが最も合っています。AのSIPOCは関係者まで洗い出す手法であり、この段階では範囲が広すぎます。BのHTAはタスク単位の詳細設計であり粒度が細かすぎます。Dの業務フロー図はチームへの共有・認識合わせが目的であり、まだ一人で整理している段階には適しません。　📖 出典：公式テキスト p.128",
+"sourcePage": 128,
+"sourceKind": "official",
+"hint": [
+{
+"en": "IPO model",
+"ja": "IPOモデル",
+"def": "Input（入力）・Process（処理）・Output（出力）の3要素で業務を表現する可視化手法。最も粒度が粗い"
+},
+{
+"en": "SIPOC",
+"ja": "SIPOC分析",
+"def": "Supplier・Input・Process・Output・Customerの5要素で業務を整理する手法。関係者の全体像把握に適する"
+}
+]
+},
+{
+"id": 2051,
+"chapter": "Ch02",
+"section": "Section1 業務の構造的理解",
+"diagnostic": true,
+"question": "AIエージェント導入設計において、「仕事・業務・作業」を階層として区別する主な理由はどれですか。",
+"choices": {
+"A": "組織の人員配置を最適化するため",
+"B": "AIエージェントが直接置き換える対象である「作業」を特定するために、その作業がどの業務の中にあり、どの役割を果たしているかを把握するため",
+"C": "プロジェクト予算を算出するため",
+"D": "業務マニュアルを最新版に更新するため"
+},
+"correct": "B",
+"explanation": "AIエージェントが直接置き換える対象は「作業」ですが、作業だけを単独で見ても前後の流れや業務上の意味が分からなければ適切な設計はできません。「どの作業をAIエージェントに任せるか」を判断する前提として業務構造の把握が必要です。　📖 出典：公式テキスト p.96",
+"sourcePage": 96,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "task hierarchy",
+"ja": "仕事・業務・作業の階層",
+"def": "仕事＝目的や役割の全体、業務＝繰り返し行う一連の流れ、作業＝業務を構成する具体的な行為という3層構造"
+}
+]
+},
+{
+"id": 2052,
+"chapter": "Ch02",
+"section": "Section1 業務の構造的理解",
+"diagnostic": false,
+"question": "IPOモデルにおいて、Process（処理）に含まれる説明として最も正確なものはどれですか。",
+"choices": {
+"A": "業務のきっかけとなる情報や素材",
+"B": "処理の結果として生み出される成果物や次の工程へ渡される情報",
+"C": "入力された情報をもとに、確認・判断・変換・登録などを行う部分であり、実際の作業が含まれる",
+"D": "業務に関わる関係者と成果物の受取人を整理したリスト"
+},
+"correct": "C",
+"explanation": "Process（処理）は、入力された情報をもとに確認・判断・変換・登録などを行う部分です。ここに実際の作業が含まれます。Aは Input、BはOutput の説明です。DはSIPOC分析の説明です。　📖 出典：公式テキスト p.96",
+"sourcePage": 96,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "IPO",
+"ja": "IPOモデル",
+"def": "Input（入力）・Process（処理）・Output（出力）の3要素で業務を捉えるフレームワーク"
+}
+]
+},
+{
+"id": 2053,
+"chapter": "Ch02",
+"section": "Section1 業務の構造的理解",
+"diagnostic": false,
+"question": "As-Is分析を実施する際に、業務マニュアルをそのままAs-Isとして採用することが危険とされる主な理由はどれですか。",
+"choices": {
+"A": "マニュアルは英語で書かれていることが多いため",
+"B": "マニュアルと実際の運用が乖離しているケースが多く、差分こそが最も価値ある発見になるため",
+"C": "マニュアルはページ数が多すぎるため",
+"D": "マニュアルを読むと担当者の業務時間が奪われるため"
+},
+"correct": "B",
+"explanation": "テキストでは「マニュアルと実際の運用が乖離しているケースは珍しくありません」と明記されています。「マニュアルにはこう書いてあるが、実際にはこうやっている」という差分には、現場が長年かけて積み上げた暗黙知が凝縮されており、AI設計に引き継ぐべき業務ルールの核心になります。　📖 出典：公式テキスト p.99",
+"sourcePage": 99,
+"sourceKind": "derived",
+"hint": []
+},
+{
+"id": 2054,
+"chapter": "Ch02",
+"section": "Section1 業務の構造的理解",
+"diagnostic": false,
+"question": "As-Is分析の5W1Hヒアリングシートにおいて「Why（なぜ）」の問いが特に重要とされる理由はどれですか。",
+"choices": {
+"A": "コスト削減の根拠を算出するために使うから",
+"B": "担当者がなぜその手順があるのか答えられない場合、かつて必要だったが今は意味を失った作業である可能性が高く、AI化より前に廃止を検討すべき候補になるから",
+"C": "業務フロー図のスイムレーンを正確に描くために使うから",
+"D": "トレーニング資料の作成に活用できるから"
+},
+"correct": "B",
+"explanation": "テキストでは「『なぜこの手順があるのか』を担当者が答えられない場合、それは『かつて必要だったが今は意味を失った作業』である可能性が高く、AI化より前に廃止を検討すべき候補になります」と明記されています。　📖 出典：公式テキスト p.99",
+"sourcePage": 99,
+"sourceKind": "derived",
+"hint": []
+},
+{
+"id": 2055,
+"chapter": "Ch02",
+"section": "Section1 業務の構造的理解",
+"diagnostic": false,
+"question": "As-Is → To-Be → ギャップ分析という順序が重要とされる理由として、最も適切なものはどれですか。",
+"choices": {
+"A": "ギャップ分析を先に実施するとコストが増えるから",
+"B": "To-Beを先に描くと現実離れした理想像になり、導入が失敗するリスクが高まるから",
+"C": "As-Is分析は法律で義務付けられているから",
+"D": "ギャップ分析はシステム部門だけが実施するものだから"
+},
+"correct": "B",
+"explanation": "テキストでは「To-Beを先に描いてしまうと、現実離れした理想像になり、導入が失敗するリスクが高まります。AIプロジェクトでは特に『技術に感動して理想から入ってしまう』ケースが多いため、意識的にこの順序を守ることが求められます」と明記されています。　📖 出典：公式テキスト p.102",
+"sourcePage": 102,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "gap analysis",
+"ja": "ギャップ分析",
+"def": "As-IsとTo-Beの差分を明確にし、何を変えれば理想に到達できるかを特定するプロセス"
+}
+]
+},
+{
+"id": 2056,
+"chapter": "Ch02",
+"section": "Section2 BPR（業務改革）の基礎",
+"diagnostic": true,
+"question": "BPR（ビジネスプロセス・リエンジニアリング）が「改善（Improvement）」ではなく「再設計（Reengineering）」という言葉を使う理由として最も適切なものはどれですか。",
+"choices": {
+"A": "「再設計」の方が英語として格調高いから",
+"B": "改善は「今あるものをより良くする」ことを前提にするが、再設計は「今あるものが本当に必要かどうか」を問うことから始めるため、発想の出発点が根本的に異なるから",
+"C": "再設計の方が短期間で完了できるから",
+"D": "改善はITシステムに適用できないから"
+},
+"correct": "B",
+"explanation": "テキストでは「BPRが『改善（Improvement）』ではなく『再設計（Reengineering）』という言葉を使う理由は、発想の出発点が根本的に異なるからです。改善は『今あるものをより良くする』ことを前提にします。再設計は『今あるものが本当に必要かどうか』を問うことから始めます」と明記されています。　📖 出典：公式テキスト p.110",
+"sourcePage": 110,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "BPR",
+"ja": "ビジネスプロセス・リエンジニアリング",
+"def": "既存の業務プロセスを漸進的に改善するのではなく、根本から問い直して再設計する手法。1990年代にマイケル・ハマーとジェームズ・チャンピーが提唱"
+}
+]
+},
+{
+"id": 2057,
+"chapter": "Ch02",
+"section": "Section2 BPR（業務改革）の基礎",
+"diagnostic": false,
+"question": "ECRSの4つの観点を効果の大きい順に正しく並べたものはどれですか。",
+"choices": {
+"A": "Simplify → Rearrange → Combine → Eliminate",
+"B": "Combine → Eliminate → Rearrange → Simplify",
+"C": "Eliminate → Combine → Rearrange → Simplify",
+"D": "Rearrange → Simplify → Eliminate → Combine"
+},
+"correct": "C",
+"explanation": "テキストでは「Eliminate（排除）・Combine（結合）・Rearrange（順序変更）・Simplify（簡素化）の頭字を取ったもので、この順序で検討することに本質的な意味があります。効果の大きい改善から着手する」と明記されています。Eliminateで工程をなくせれば自動化の必要すらなくなるため効果が最大です。　📖 出典：公式テキスト p.112",
+"sourcePage": 112,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "ECRS",
+"ja": "ECRS",
+"def": "Eliminate・Combine・Rearrange・Simplifyの頭字語。BPRを実務で進めるフレームワーク。この順序で検討することに意味がある"
+}
+]
+},
+{
+"id": 2058,
+"chapter": "Ch02",
+"section": "Section2 BPR（業務改革）の基礎",
+"diagnostic": false,
+"question": "ECRSのEliminate（排除）を最初に検討する理由として最も適切なものはどれですか。",
+"choices": {
+"A": "排除が最も実施しやすいから",
+"B": "排除できれば自動化の必要すらなくなり、効果は最も大きくコストはゼロになるから",
+"C": "排除は担当者の承認が不要だから",
+"D": "排除によってシステム移行コストが下がるから"
+},
+"correct": "B",
+"explanation": "テキストでは「排除できれば自動化の必要すらなくなるため、効果は最も大きく、コストはゼロです」と明記されています。また、「最初に、かつ最も厳しく問うべき問いです」とも述べられており、最も効果の大きい改善として最初に検討する位置付けです。　📖 出典：公式テキスト p.112",
+"sourcePage": 112,
+"sourceKind": "derived",
+"hint": []
+},
+{
+"id": 2059,
+"chapter": "Ch02",
+"section": "Section2 BPR（業務改革）の基礎",
+"diagnostic": false,
+"question": "ヘルプデスク業務のECRS最適化において、「カテゴリ分類」と「FAQ検索」を1ステップに統合したことは、ECRSのどの観点に該当しますか。",
+"choices": {
+"A": "Eliminate（排除）",
+"B": "Rearrange（順序変更）",
+"C": "Combine（結合）",
+"D": "Simplify（簡素化）"
+},
+"correct": "C",
+"explanation": "テキストでは「カテゴリ分類」と「FAQ検索」が別々のステップとして行われていたものを、AIエージェントが「分類と同時にFAQ検索」に統合するとしています。複数の工程を一つにまとめることはCombine（結合）です。　📖 出典：公式テキスト p.115",
+"sourcePage": 115,
+"sourceKind": "derived",
+"hint": []
+},
+{
+"id": 2060,
+"chapter": "Ch02",
+"section": "Section3 業務可視化の手法",
+"diagnostic": true,
+"question": "SIPOC分析がIPOモデルに対して優れている点はどれですか。",
+"choices": {
+"A": "処理の詳細な手順を記述できる",
+"B": "AIエージェントとの役割分担を作業レベルで設計できる",
+"C": "業務を依頼してくる主体（Supplier）と成果物を受け取る主体（Customer）を含め、関係者の全体像を把握できるため、要件漏れを防げる",
+"D": "チームの認識を1枚の図に統合できる"
+},
+"correct": "C",
+"explanation": "テキストでは「SIPOCはIPOの前後に、業務を依頼してくる主体（Supplier）と成果物を受け取る主体（Customer）を加えた5要素で業務を整理する手法」と説明されています。IPOだけでは「このOutputは誰が受け取るのか」という関係者情報が見えず、後から要件が噴出する問題を補うのがSIPOCです。　📖 出典：公式テキスト p.122",
+"sourcePage": 122,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "SIPOC",
+"ja": "SIPOC",
+"def": "Supplier・Input・Process・Output・Customerの5要素。IPOに「誰が依頼し、誰が受け取るか」を加えた手法"
+}
+]
+},
+{
+"id": 2061,
+"chapter": "Ch02",
+"section": "Section3 業務可視化の手法",
+"diagnostic": false,
+"question": "HTA（階層的タスク分析）で「アトミック・タスク」と呼ばれるものはどれですか。",
+"choices": {
+"A": "業務の最上位目標",
+"B": "分解しきった最小単位の作業",
+"C": "部署をまたぐ業務フロー",
+"D": "月次レポートの集計単位"
+},
+"correct": "B",
+"explanation": "テキストでは「分解しきった最小単位の作業をアトミック・タスクと呼びます」と明記されています。HTAはこのアトミック・タスクまで業務を階層的に分解し、AIエージェントが担う作業と人間が担う作業を設計します。　📖 出典：公式テキスト p.123",
+"sourcePage": 123,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "HTA",
+"ja": "階層的タスク分析（HTA: Hierarchical Task Analysis）",
+"def": "業務をAIエージェントが処理できる最小の作業単位まで階層的に分解していく手法"
+},
+{
+"en": "atomic task",
+"ja": "アトミック・タスク",
+"def": "HTAで分解しきった最小単位の作業"
+}
+]
+},
+{
+"id": 2062,
+"chapter": "Ch02",
+"section": "Section3 業務可視化の手法",
+"diagnostic": false,
+"question": "HTAでアトミック・タスクの担当を判断する際、「人間が担う」とすべき作業の特徴として最も適切なものはどれですか。",
+"choices": {
+"A": "ルールが明確で繰り返し発生する作業",
+"B": "判断を伴わない純粋な機械的操作",
+"C": "例外判断や倫理的判断など、高度な文脈理解が必要な作業",
+"D": "データをシステムに転記する作業"
+},
+"correct": "C",
+"explanation": "テキストでは「例外判断・倫理的判断・人間が担う：高度な文脈理解が必要な作業。『大口注文の受注可否を判断する』『クレームの感情的背景を読み取って対応する』など」と明記されています。ルールが明確で繰り返し発生する作業はAI処理、純粋な機械的操作は定型処理（RPA/スクリプト）です。　📖 出典：公式テキスト p.123",
+"sourcePage": 123,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "Human-in-the-Loop",
+"ja": "ヒューマン・イン・ザ・ループ",
+"def": "AIエージェントの判断に誤りがあった場合のリスクが高いものは人間が最終確認する設計"
+}
+]
+},
+{
+"id": 2063,
+"chapter": "Ch02",
+"section": "Section3 業務可視化の手法",
+"diagnostic": false,
+"question": "業務フロー図（スイムレーン図）の最大の価値として、テキストが挙げているものはどれですか。",
+"choices": {
+"A": "処理速度の計測",
+"B": "コスト削減額の試算",
+"C": "チームでの認識統合。文章や表では見えにくい「工程の抜け」「担当の重複」「引き渡しの曖昧さ」が図にした瞬間に視覚的に明らかになる",
+"D": "システムのAPI仕様書作成"
+},
+"correct": "C",
+"explanation": "テキストでは「業務フロー図の最大の価値は、チームでの認識統合にあります。文章や表では見えにくい『工程の抜け』『担当の重複』『引き渡しの曖昧さ』が、図にした瞬間に視覚的に明らかになります」と明記されています。　📖 出典：公式テキスト p.124",
+"sourcePage": 124,
+"sourceKind": "derived",
+"hint": [
+{
+"en": "swim lane diagram",
+"ja": "スイムレーン図",
+"def": "担当者や部署を横軸に並べ、作業の流れと引き渡しのタイミングを図示する業務フロー図の形式"
+}
+]
+},
+{
+"id": 3001,
+"chapter": "Ch03",
+"section": "3-1 ナレッジマネジメントの基礎",
+"diagnostic": true,
+"question": "ある企業でAIエージェントの導入を検討しています。ベテラン営業担当者が「この顧客は決算前に大型発注する傾向がある」と判断できますが、その根拠は文書化されていません。AIエージェントにこの判断を任せるために、最初に取り組むべきことはどれですか。",
+"choices": {
+"A": "より高性能なLLMを導入し、AIエージェントの推論能力を高める",
+"B": "ベテラン担当者の判断基準を文書化し、ナレッジベースに取り込む",
+"C": "過去の受注データをすべてAIエージェントに入力し、パターンを自動学習させる",
+"D": "ベテラン担当者の業務をそのまま録画し、AIエージェントに見せる"
+},
+"correct": "B",
+"explanation": "AIエージェントはナレッジベースの形式知を参照して判断しますが、担当者の頭の中にしかない暗黙知にはアクセスできません。まずベテランの判断基準を明文化し、ナレッジベースに取り込む必要があります。AIエージェントは暗黙知がナレッジベースにない以上、モデルの性能を上げても解決しません。　📖 出典：公式テキスト p.146",
+"sourcePage": 146,
+"sourceKind": "official",
+"hint": [
+"暗黙知",
+"形式知",
+"ナレッジベース"
+]
+},
+{
+"id": 3002,
+"chapter": "Ch03",
+"section": "3-2 データの種類と特性",
+"diagnostic": true,
+"question": "以下の3つのデータを正しく分類してください。X：顧客からの自由記述のクレームメール本文 Y：受注管理システムの月次売上集計テーブル Z：AIエージェントが出力するJSON形式の回答データ",
+"choices": {
+"A": "X=構造化、Y=非構造化、Z=半構造化",
+"B": "X=非構造化、Y=構造化、Z=半構造化",
+"C": "X=半構造化、Y=構造化、Z=非構造化",
+"D": "X=非構造化、Y=半構造化、Z=構造化"
+},
+"correct": "B",
+"explanation": "クレームメール本文は自然言語の自由記述テキストであり非構造化データです。月次売上集計テーブルは行と列の構造を持つ構造化データです。AIの出力JSONはキーと値のペアで部分的に構造化された半構造化データです。　📖 出典：公式テキスト p.157",
+"sourcePage": 157,
+"sourceKind": "official",
+"hint": [
+"構造化データ",
+"非構造化データ",
+"半構造化データ",
+"JSON"
+]
+},
+{
+"id": 3003,
+"chapter": "Ch03",
+"section": "3-3 RAGの仕組み",
+"diagnostic": true,
+"question": "RAGに関する記述として、正しいものはどれですか。",
+"choices": {
+"A": "RAGはモデルのパラメータを更新することで社内知識を学習させる技術である",
+"B": "RAGは外部ナレッジベースから関連情報を検索し、プロンプトに含めて回答を生成する技術である",
+"C": "RAGを使用するとLLMの事前学習データが書き換えられる",
+"D": "RAGはナレッジベースがなくても機能する"
+},
+"correct": "B",
+"explanation": "RAGは「検索して参照する」技術であり、モデルのパラメータは更新しません。外部ナレッジベースから検索した情報をプロンプトに含め、LLMがそれを参照して回答を生成します。CもDも誤りです。　📖 出典：公式テキスト p.169",
+"sourcePage": 169,
+"sourceKind": "official",
+"hint": [
+"RAG",
+"Retrieval-Augmented Generation",
+"プロンプト",
+"ナレッジベース"
+]
+},
+{
+"id": 3004,
+"chapter": "Ch03",
+"section": "3-4 AIガバナンスと法務",
+"diagnostic": true,
+"question": "AIポリシーの策定に関する記述として、最も適切なものはどれですか。",
+"choices": {
+"A": "AIポリシーは業界団体が公開する標準テンプレートをそのまま適用すればよい",
+"B": "入力許可データと禁止データの定義は、自社の業務内容・機密レベル・利用するAIサービスの形態に応じて、法務部門と協議して策定する",
+"C": "クラウド型のAIサービスでもオンプレミス型でも、AIポリシーの内容は同じでよい",
+"D": "AIポリシーは一度策定すれば、以降は見直す必要がない"
+},
+"correct": "B",
+"explanation": "AIポリシーに万社共通の正解は存在しません。どのデータを許可し禁止するかは、業種、データの機密レベル、AIサービスの形態によって企業ごとに異なります。Aのようにテンプレートをそのまま流用するのではなく、自社の状況に基づいて策定する必要があります。Cはクラウド型はデータが外部に送信されるため、オンプレミス型とはリスクの性質が異なります。　📖 出典：公式テキスト p.181",
+"sourcePage": 181,
+"sourceKind": "official",
+"hint": [
+"AIポリシー",
+"禁止データ",
+"許可データ",
+"クラウド型",
+"オンプレミス型"
+]
+},
+{
+"id": 3005,
+"chapter": "Ch03",
+"section": "3-5 AIエージェントが読みやすいデータを作る",
+"diagnostic": true,
+"question": "ヘルプデスクAIに社員が「製品Aのライセンス価格を教えて」と問い合わせたところ、2024年度の旧価格が回答されました。ナレッジベースには2026年度の最新価格表も登録済みです。この問題の原因として最も可能性が高いものはどれですか。",
+"choices": {
+"A": "「価格表_2024年度版」と「価格表_2026年度版」の2ファイルが両方ナレッジベースに登録されており、RAGが旧版を検索上位に返した",
+"B": "LLMのモデルが2024年のデータで事前学習されているため、2024年の価格を出力した",
+"C": "社員の質問に「2026年度」と明記されていなかったため、AIエージェントが年度を特定できなかった",
+"D": "2026年度の価格表がPDF形式で登録されていたため、AIエージェントが読み取れなかった"
+},
+"correct": "A",
+"explanation": "旧版と新版が両方ナレッジベースに存在すると、RAGはどちらも検索対象として扱います。旧版のほうがテキスト量が多かったり、質問との類似度がわずかに高かったりすると、旧版が検索上位に来てしまいます。対策は旧版を削除してバージョン履歴機能で管理する方法と、メタデータに「有効期限」や「適用開始日」を付与して最新版を優先的に返すフィルタリングを設計する方法です。これはナレッジベースの鮮度管理における「旧版の無効化」が未実施であったことに起因する問題です。　📖 出典：公式テキスト p.199",
+"sourcePage": 199,
+"sourceKind": "official",
+"hint": [
+"ナレッジベース",
+"鮮度管理",
+"バージョン管理",
+"RAG"
+]
+},
+{
+"id": 3006,
+"chapter": "Ch03",
+"section": "3-6 AIプロジェクトの進め方",
+"diagnostic": true,
+"question": "あるAIエージェント・ストラテジストが、営業部門から「AIエージェントを使って提案書作成を自動化したい」という要望を受けました。この時点でプロジェクトを進めるにあたり、最初に取るべき行動として最も適切なものはどれですか。",
+"choices": {
+"A": "要望通り提案書自動化のためのAIモデル開発をすぐに開始する",
+"B": "「何が困っているか」「何が変われば成功か」「現状どう対処しているか」を深掘りする",
+"C": "市場に出ている提案書作成AIツールを調査し、導入コストを試算する",
+"D": "提案書自動化の要件定義ドキュメントを作成する"
+},
+"correct": "B",
+"explanation": "「提案書自動化」は手段の指定であり、課題ではありません。まず「何が本当に困っているか」を深掘りしないまま進めると、課題に合わない解決策を設計するリスクがあります。業務分析・現場視察に進むかどうかを判断するための「課題の輪郭」を掴むことが最初のステップです。　📖 出典：公式テキスト p.214",
+"sourcePage": 214,
+"sourceKind": "official",
+"hint": [
+"PoC",
+"初期相談",
+"課題の特定",
+"手段と目的"
+]
+},
+{
+"id": 3007,
+"chapter": "Ch03",
+"section": "3-7 AIプロジェクトの成功の定義：3層フレームワーク",
+"diagnostic": true,
+"question": "ストラテジストが、ヘルプデスクAIのPoCに向けて成功の定義を設計しています。以下のうち、最初に定義すべき指標として最も適切なものはどれですか。",
+"choices": {
+"A": "AIエージェントの回答正答率の目標値（例：85%以上）",
+"B": "問い合わせ対応時間の削減率（例：30%削減）",
+"C": "担当者の週次利用率の目標値（例：70%以上）",
+"D": "AIエージェントが答えられずエスカレーションした件数"
+},
+"correct": "B",
+"explanation": "3層フレームワークでは「定義はトップダウン」が原則です。まず効果層（ビジネスへの効果）を定義し、そこから定着層・精度層を逆算します。Aの正答率は精度層、Cの利用率は定着層の指標であり、どちらも効果層の目標が決まって初めて根拠のある目標値が設定できます。　📖 出典：公式テキスト p.225",
+"sourcePage": 225,
+"sourceKind": "official",
+"hint": [
+"3層フレームワーク",
+"効果層",
+"定着層",
+"精度層",
+"トップダウン"
+]
+},
+{
+"id": 3051,
+"chapter": "Ch03",
+"section": "3-1 ナレッジマネジメントの基礎",
+"diagnostic": true,
+"question": "SECIモデルの4つのフェーズを正しく説明しているものはどれですか。",
+"choices": {
+"A": "共同化→表出化→連結化→内面化の順で、暗黙知と形式知が循環する",
+"B": "表出化→共同化→内面化→連結化の順で、組織の知識が蓄積される",
+"C": "連結化→表出化→共同化→内面化の順で、知識が変換される",
+"D": "内面化→共同化→表出化→連結化の順で、個人の知識が組織化される"
+},
+"correct": "A",
+"explanation": "SECIモデルは、共同化（暗黙知→暗黙知）・表出化（暗黙知→形式知）・連結化（形式知→形式知）・内面化（形式知→暗黙知）の4フェーズで循環します。野中郁次郎が提唱したこのモデルによって、組織の知識が継続的に蓄積・循環します。　📖 出典：公式テキスト p.141",
+"sourcePage": 141,
+"sourceKind": "derived",
+"hint": [
+"SECIモデル",
+"共同化",
+"表出化",
+"連結化",
+"内面化",
+"野中郁次郎"
+]
+},
+{
+"id": 3052,
+"chapter": "Ch03",
+"section": "3-1 ナレッジマネジメントの基礎",
+"diagnostic": false,
+"question": "AIエージェント稼働後、新人担当者がAIエージェントの回答を日々確認する中で「AIエージェントがうまく対応できないパターン」を発見し、その改善点をナレッジベースにフィードバックしました。この活動はSECIモデルのどのフェーズに該当しますか。",
+"choices": {
+"A": "共同化 — 暗黙知が暗黙知として共有された",
+"B": "表出化 — 実務で得た暗黙知が形式知に変換された",
+"C": "連結化 — 既存の形式知同士が組み合わされた",
+"D": "内面化 — 形式知が暗黙知として定着した"
+},
+"correct": "B",
+"explanation": "新人が実務の中で体感的に気づいた「AIエージェントが苦手なパターン」は暗黙知です。それをナレッジベースにフィードバックする行為は、暗黙知を形式知に変換する表出化に該当します。　📖 出典：公式テキスト p.148",
+"sourcePage": 148,
+"sourceKind": "derived",
+"hint": [
+"SECIモデル",
+"表出化",
+"暗黙知",
+"形式知"
+]
+},
+{
+"id": 3053,
+"chapter": "Ch03",
+"section": "3-1 ナレッジマネジメントの基礎",
+"diagnostic": false,
+"question": "暗黙知が組織に蓄積されたままになる「本質的な障壁」として、テキストが挙げている2つの理由はどれですか。",
+"choices": {
+"A": "言語化の時間不足と、デジタル化ツールの欠如",
+"B": "言語化の困難さと、知識の囲い込みという心理的障壁",
+"C": "マネジメント層の無理解と、法的規制による制約",
+"D": "ナレッジベースの構築コストと、組織文化の硬直性"
+},
+"correct": "B",
+"explanation": "本文では、暗黙知が形式知化されない本質的な障壁として「言語化の困難さ（経験で得た判断基準を言葉で説明しにくい）」と「知識の囲い込みという心理的障壁（自分だけが知ることが存在価値になっている）」の2つを挙げています。　📖 出典：公式テキスト p.137",
+"sourcePage": 137,
+"sourceKind": "derived",
+"hint": [
+"暗黙知",
+"言語化",
+"知識の囲い込み"
+]
+},
+{
+"id": 3054,
+"chapter": "Ch03",
+"section": "3-2 データの種類と特性",
+"diagnostic": false,
+"question": "ヘルプデスクAIの設計で、社員の所属部署やOS環境の情報を活用したいと考えています。最も適切な設計はどれですか。",
+"choices": {
+"A": "社員情報をすべてRAGのナレッジベースに登録し、AIエージェントが検索して取得する",
+"B": "社員情報をAPIで社員データベースから直接取得し、AIエージェントのプロンプトに追加する",
+"C": "全社員の情報を毎回プロンプトに含めて、AIに該当社員を特定させる",
+"D": "社員情報は個人情報のため、AIエージェントでは一切扱わない"
+},
+"correct": "B",
+"explanation": "社員情報は構造化データであり、APIで直接取得してプロンプトに注入する設計が効率的です。AのRAGは非構造化データに適した方法であり、構造化データには不適切です。Cは全社員の情報を毎回含めるとトークン消費が膨大になります。Dはデータの取り扱いルールに従って適切に管理すれば活用可能です。　📖 出典：公式テキスト p.159",
+"sourcePage": 159,
+"sourceKind": "derived",
+"hint": [
+"構造化データ",
+"API",
+"RAG",
+"プロンプト"
+]
+},
+{
+"id": 3055,
+"chapter": "Ch03",
+"section": "3-2 データの種類と特性",
+"diagnostic": false,
+"question": "非構造化データの処理に関する記述として、最も適切なものはどれですか。",
+"choices": {
+"A": "非構造化データは構造化データに変換してからでなければAIエージェントで処理できない",
+"B": "企業データの約80%を占める非構造化データの処理こそ、LLMが従来のITシステムに対して持つ最大の強みである",
+"C": "非構造化データはメタデータを付与する必要がなく、そのままRAGに投入すればよい",
+"D": "非構造化データの処理は従来のデータベース検索で十分対応できる"
+},
+"correct": "B",
+"explanation": "従来のITシステムは構造化データの処理を得意としていましたが、メールや文書などの非構造化データの「意味の理解」は困難でした。LLMの登場により、企業データの大半を占める非構造化データの処理が可能になったことが、AIエージェント導入の最大の動機です。Cは誤りで、メタデータを付与することでRAGの検索精度が大きく向上します。　📖 出典：公式テキスト p.150",
+"sourcePage": 150,
+"sourceKind": "derived",
+"hint": [
+"非構造化データ",
+"LLM",
+"メタデータ",
+"RAG"
+]
+},
+{
+"id": 3056,
+"chapter": "Ch03",
+"section": "3-3 RAGの仕組み",
+"diagnostic": true,
+"question": "RAGの保存フェーズで、マニュアルのチャンクサイズが「大きすぎる」場合と「小さすぎる」場合に発生する問題の組み合わせとして、正しいものはどれですか。",
+"choices": {
+"A": "大きすぎる＝検索速度が低下する、小さすぎる＝ベクトル化できなくなる",
+"B": "大きすぎる＝1つのチャンクに複数トピックが混在して検索ノイズが増える、小さすぎる＝文脈が失われて回答の質が低下する",
+"C": "大きすぎる＝メタデータを付与できなくなる、小さすぎる＝チャンク数が多すぎてコストが増大する",
+"D": "大きすぎる＝ベクトル空間上で近い位置に配置される、小さすぎる＝セマンティック検索が機能しなくなる"
+},
+"correct": "B",
+"explanation": "チャンクが大きすぎると異なるトピックが1つのチャンクに混在し、質問に対して無関係な情報まで返してしまいます。チャンクが小さすぎると文脈を欠いた断片になり、AIエージェントが適切な回答を生成できません。「1つのトピックが1つのチャンクに収まる」サイズが目安です。　📖 出典：公式テキスト p.162",
+"sourcePage": 162,
+"sourceKind": "derived",
+"hint": [
+"チャンク",
+"チャンク分割",
+"RAG",
+"セマンティック検索"
+]
+},
+{
+"id": 3057,
+"chapter": "Ch03",
+"section": "3-3 RAGの仕組み",
+"diagnostic": false,
+"question": "RAGにおけるセマンティック検索の特徴として、正しいものはどれですか。",
+"choices": {
+"A": "キーワードの完全一致でのみ検索結果を返す",
+"B": "検索速度よりも再現率を優先するため、すべてのチャンクを毎回スキャンする",
+"C": "テキストをベクトル化し、意味の近さで関連チャンクを検索する",
+"D": "ユーザーの質問をそのままデータベースのSQLクエリに変換して検索する"
+},
+"correct": "C",
+"explanation": "ベクトル検索（セマンティック検索）は「意味の近さ」で検索します。テキストをベクトル化することで、「初期設定がうまくいかない」と「セットアップ時のエラー対処法」のように表現が異なっていても意味が近ければヒットします。キーワードの完全一致ではなく、文脈全体の意味が検索に反映されるのが特徴です。　📖 出典：公式テキスト p.163",
+"sourcePage": 163,
+"sourceKind": "derived",
+"hint": [
+"セマンティック検索",
+"ベクトル検索",
+"ベクトル化",
+"RAG"
+]
+},
+{
+"id": 3058,
+"chapter": "Ch03",
+"section": "3-3 RAGの仕組み",
+"diagnostic": false,
+"question": "RAGの精度問題を改善する際、最初に行うべきことはどれですか。",
+"choices": {
+"A": "LLMをより高性能なモデルに変更する",
+"B": "ナレッジベースのすべてのドキュメントを作り直す",
+"C": "「検索精度」と「生成精度」のどちらに問題があるかを切り分ける",
+"D": "すべての回答を人間がチェックする運用に変更する"
+},
+"correct": "C",
+"explanation": "RAGの精度問題は「検索」と「生成」のどちらに原因があるかを切り分けて対処します。検索されたチャンクを確認し、的外れなチャンクが上位にヒットしていれば検索精度の問題、正しいチャンクが取得されているのに回答が不正確なら生成精度の問題です。原因の特定なしにモデル変更から着手するのは効率が悪く、すべてを作り直したりRAGを諦めたりする必要はありません。　📖 出典：公式テキスト p.172",
+"sourcePage": 172,
+"sourceKind": "derived",
+"hint": [
+"RAG",
+"検索精度",
+"生成精度",
+"ボトルネック"
+]
+},
+{
+"id": 3059,
+"chapter": "Ch03",
+"section": "3-4 AIガバナンスと法務",
+"diagnostic": false,
+"question": "ストラテジストが法務部門に「RAGでナレッジベースを検索し、LLMがプロンプトに含めて回答を生成します」と説明しました。法務部門が理解しやすい翻訳として最も適切なものはどれですか。",
+"choices": {
+"A": "「AIエージェントが社内文書を自動学習して知識を更新します」",
+"B": "「社内文書のテキストがAIサービスに送信され、AIエージェントがその内容を参照して回答を作成します」",
+"C": "「AIエージェントが社内のすべてのデータにアクセスして最適な回答を生成します」",
+"D": "「社内文書は安全に保管されており、AIエージェントには一切送信されません」"
+},
+"correct": "B",
+"explanation": "Bは技術的に正確で、かつ法務部門が法的リスクを評価できる翻訳です。Aの「学習」という表現は誤解を招きます。RAGはモデルのパラメータを更新するわけではなく、検索した情報をプロンプトに含めるだけです。Cは「すべてのデータ」が不正確で、Dは事実と異なります。　📖 出典：公式テキスト p.177",
+"sourcePage": 177,
+"sourceKind": "derived",
+"hint": [
+"AIガバナンス",
+"法務連携",
+"RAG",
+"個人情報保護"
+]
+},
+{
+"id": 3060,
+"chapter": "Ch03",
+"section": "3-4 AIガバナンスと法務",
+"diagnostic": false,
+"question": "AIエージェントの自動回答が誤った情報を案内し、業務上の損害が発生しました。この場合の責任に関する記述として、最も適切なものはどれですか。",
+"choices": {
+"A": "AIエージェントの開発元が全責任を負う",
+"B": "AIエージェントが自律的に回答したため、誰も責任を負わない",
+"C": "AIポリシーに基づく責任分界点に従い、運用管理者または組織が責任を負う",
+"D": "AIエージェントの出力を利用したユーザーの自己責任である"
+},
+"correct": "C",
+"explanation": "AIエージェント導入前に責任分界点をAIポリシーで定義しておくことが重要です。Bの「誰も責任を負わない」は組織として許容されません。AIエージェントが自律的に動くからこそ、責任の所在を人間の側で事前に決めておくことがガバナンスの核心です。　📖 出典：公式テキスト p.183",
+"sourcePage": 183,
+"sourceKind": "derived",
+"hint": [
+"責任分界点",
+"AIポリシー",
+"AIガバナンス",
+"Human-in-the-Loop"
+]
+},
+{
+"id": 3061,
+"chapter": "Ch03",
+"section": "3-5 AIエージェントが読みやすいデータを作る",
+"diagnostic": false,
+"question": "AIエージェントが読みやすいデータの条件として、最も適切なものはどれですか。",
+"choices": {
+"A": "セルを結合してレイアウトを整え、視覚的に読みやすい表を作る",
+"B": "記述だけで意味が分かること、1つの項目に1つの情報だけが入っていること、情報の構造が文字として明示されていること",
+"C": "PDFやWordなど標準フォーマットで保存されていること",
+"D": "社内サーバーの決められたフォルダ構造に格納されていること"
+},
+"correct": "B",
+"explanation": "AIエージェントが扱いやすいデータとは、その記述だけで意味が分かること、1つの項目に1つの情報だけが入っていること、情報の構造が文字として明示されていることを満たすデータです。セル結合はAIエージェントが行と列の対応を正しく判定できなくする原因になります。　📖 出典：公式テキスト p.184",
+"sourcePage": 184,
+"sourceKind": "derived",
+"hint": [
+"AIエージェント",
+"データ品質",
+"AI Readyデータ",
+"構造"
+]
+},
+{
+"id": 3062,
+"chapter": "Ch03",
+"section": "3-5 AIエージェントが読みやすいデータを作る",
+"diagnostic": false,
+"question": "ナレッジベースの「ドリフト」とは何を指しますか。",
+"choices": {
+"A": "AIエージェントが回答時に関係のないチャンクを参照してしまう現象",
+"B": "ナレッジベースに古い情報が蓄積され、AIエージェントの回答品質が徐々に劣化する現象",
+"C": "ベクトル空間でのチャンクの位置がずれて検索精度が下がる現象",
+"D": "担当者が変わるたびにナレッジベースの記述スタイルがばらつく現象"
+},
+"correct": "B",
+"explanation": "ドリフトとは、ナレッジベースが古い情報を返し続けることによってAIエージェントの回答品質が徐々に劣化する現象です。ナレッジベースを静的に扱うこと（一度投入したら更新しないこと）が品質劣化の最大の原因です。更新パイプラインを設計し、変更の検知・反映・古い情報の除外・品質確認を継続的に行うことが必要です。　📖 出典：公式テキスト p.192",
+"sourcePage": 192,
+"sourceKind": "derived",
+"hint": [
+"ドリフト",
+"ナレッジベース",
+"鮮度管理",
+"更新パイプライン"
+]
+},
+{
+"id": 3063,
+"chapter": "Ch03",
+"section": "3-6 AIプロジェクトの進め方",
+"diagnostic": false,
+"question": "PoCの効果検証の結果、定量基準（正答率80%以上）は達成したものの、現場担当者からは「使いたくない」という声が多数出ました。AIエージェント推進担当者の判断として最も適切なものはどれですか。",
+"choices": {
+"A": "定量基準を達成しているため、Bフェーズ（本運用）への移行を進める",
+"B": "定量基準を引き上げてさらにモデルを改良し、精度を上げることで解決を図る",
+"C": "定性検証で「使いたくない」理由を特定し、課題に応じてAフェーズを繰り返す",
+"D": "現場担当者の抵抗は導入後の研修で解消できるため、Bフェーズへの移行を進める"
+},
+"correct": "C",
+"explanation": "効果検証は定量・定性の両面で合格することが条件です。「使いたくない」という定性評価には理由があり（UIの問題、回答の信頼性への懸念、業務フローへの組み込みにくさなど）、その理由を特定せずにBフェーズへ進むと、本番導入後に使われないシステムになります。理由を特定してスコープ・設計を修正し、Aフェーズを周回させることが正しい判断です。　📖 出典：公式テキスト p.216",
+"sourcePage": 216,
+"sourceKind": "derived",
+"hint": [
+"PoC",
+"定量検証",
+"定性検証",
+"判断ゲート"
+]
+},
+{
+"id": 3064,
+"chapter": "Ch03",
+"section": "3-7 AIプロジェクトの成功の定義：3層フレームワーク",
+"diagnostic": false,
+"question": "あるプロジェクトでPoC終了後に経営から「このAIエージェントの導入で、実際にどれだけコストが下がったのか数字で示してほしい」と求められました。ストラテジストは導入前の数値を記録しておらず、削減効果を証明できない状態です。この失敗の根本原因として最も適切なものはどれですか。",
+"choices": {
+"A": "精度層の目標値を高く設定しすぎた",
+"B": "PoC期間が短すぎて、効果が出るまで時間が足りなかった",
+"C": "効果層のベースラインをPoC開始前に測定していなかった",
+"D": "定着層の定量指標を本運用後に測定しなかった"
+},
+"correct": "C",
+"explanation": "効果を証明するには「導入前の数値」と「導入後の数値」の比較が必要です。導入前のベースラインを測定していなければ、どれだけ改善したかを示す手段がありません。ベースライン測定はPoC開始前、または開始と同時に行うことが鉄則です。これは成功定義シートのSTEP1（効果層）に測定時期として明記されています。　📖 出典：公式テキスト p.219",
+"sourcePage": 219,
+"sourceKind": "derived",
+"hint": [
+"効果層",
+"ベースライン",
+"成功定義",
+"3層フレームワーク"
+]
+},
+{
+"id": 3065,
+"chapter": "Ch03",
+"section": "3-3 RAGの仕組み",
+"diagnostic": false,
+"question": "RAGにおいて「グラウンディング」とはどのような概念ですか。",
+"choices": {
+"A": "AIエージェントの回答を外部の文書やデータに基づかせることで、根拠のない内容をもっともらしく答えるリスクを抑える手法",
+"B": "AIエージェントのパラメータを社内データで更新して固定化すること",
+"C": "ベクトルデータベースのインデックスを最適化して検索速度を向上させること",
+"D": "ユーザーの質問を複数のクエリに分解して検索精度を上げること"
+},
+"correct": "A",
+"explanation": "グラウンディングとは、AIエージェントの回答を外部の文書やデータに基づかせる手法です。RAGではユーザーの質問に対して検索した複数のチャンクをLLMへのプロンプトに含め、LLMがそれらの情報を根拠として回答を生成します。これにより、AIエージェントが根拠のない内容をもっともらしく答えるハルシネーションのリスクを抑えやすくなります。　📖 出典：公式テキスト p.163",
+"sourcePage": 163,
+"sourceKind": "derived",
+"hint": [
+"グラウンディング",
+"ハルシネーション",
+"RAG",
+"根拠"
+]
+},
+{
+"id": 3066,
+"chapter": "Ch03",
+"section": "3-7 AIプロジェクトの成功の定義：3層フレームワーク",
+"diagnostic": false,
+"question": "品質検査AIエージェントの精度層の目標値を設定しています。不良品の見逃しは製品リコールにつながるリスクがある一方、誤検知（良品を不良と判断すること）が多すぎると検査ラインが止まる問題もあります。この場合、精度指標の設計として最も適切なものはどれですか。",
+"choices": {
+"A": "正答率（Accuracy）だけを測定し、95%以上を目標にする",
+"B": "適合率（Precision）を優先し、誤検知率を最小化することを目標にする",
+"C": "再現率（Recall）を優先しつつ、誤検知率にも許容上限を設ける",
+"D": "F1スコアだけを測定し、適合率と再現率のバランスを均等にする"
+},
+"correct": "C",
+"explanation": "製品リコールにつながる「不良品の見逃し」が最大のリスクであるため、再現率（本当の不良品をどれだけ拾えたか）を優先します。ただし誤検知が多すぎると検査ラインが止まるため、誤検知率（適合率の裏側）にも許容上限を設ける設計が現実的です。Aの正答率だけでは「見逃し」と「誤検知」の内訳がわからず、業務リスクの評価に使えません。　📖 出典：公式テキスト p.222",
+"sourcePage": 222,
+"sourceKind": "derived",
+"hint": [
+"再現率",
+"適合率",
+"正答率",
+"F1スコア",
+"精度層"
+]
+},
+{
+"id": 3067,
+"chapter": "Ch03",
+"section": "3-5 AIエージェントが読みやすいデータを作る",
+"diagnostic": false,
+"question": "AIエージェントによるメタデータ自動付与機能を使ってITマニュアルにタグを付与する運用を検討しています。最も適切な運用方針はどれですか。",
+"choices": {
+"A": "AIエージェントが付与したメタデータをそのまま確定し、人間の確認は不要とする",
+"B": "AIエージェントがメタデータの叩き台を作成し、IT部門の担当者が確認・修正してから確定する",
+"C": "AIエージェントのメタデータ付与は信頼できないため、すべて人間が手作業でタグ付けする",
+"D": "メタデータの付与はRAGの精度に影響しないため、付与しなくてよい"
+},
+"correct": "B",
+"explanation": "AIエージェントによるメタデータ自動付与は効率的ですが、誤りがないとは限りません。AIエージェントが叩き台を作り、人間が確認・修正するHuman-in-the-Loopの運用が最もバランスの取れたアプローチです。Aは誤ったメタデータが検索精度を下げるリスクがあります。Cはゼロから手作業でやるよりAIエージェントの叩き台を修正するほうがはるかに効率的です。メタデータはRAGの検索精度を大きく左右します。　📖 出典：公式テキスト p.201",
+"sourcePage": 201,
+"sourceKind": "derived",
+"hint": [
+"メタデータ",
+"Human-in-the-Loop",
+"RAG",
+"AIエージェント"
+]
+},
+{
+"id": 4001,
+"chapter": "Ch04",
+"section": "自動化レベルの進化論と実務における最適解",
+"diagnostic": true,
+"question": "営業部門で提案書作成を効率化するため、ChatGPTに「○○業界向けの提案書を作って」と都度入力して下書きを作成しています。一方、別のチームでは専用のカスタムチャットボットを構築し、製品カタログをナレッジとして登録して運用しています。前者と後者はそれぞれ自動化レベルのどの段階に該当しますか。",
+"choices": {
+"A": "前者＝Lv.1、後者＝Lv.2",
+"B": "前者＝Lv.1、後者＝Lv.3",
+"C": "前者＝Lv.2、後者＝Lv.3",
+"D": "前者＝Lv.2、後者＝Lv.4"
+},
+"correct": "A",
+"explanation": "前者は汎用のChatGPTをそのまま都度利用しており、仕組み化されていないのでLv.1です。後者は専用のチャットボットを構築し、ナレッジベースで専門性を持たせているのでLv.2です。Lv.1とLv.2の境界線は「仕組み化されているか」で判別します。　📖 出典：公式テキスト p.238",
+"sourcePage": 238,
+"sourceKind": "official",
+"hint": [
+"Lv.1 アドホック",
+"Lv.2 カスタムチャットボット",
+"仕組み化"
+]
+},
+{
+"id": 4002,
+"chapter": "Ch04",
+"section": "ワークフロー設計 トリガーとアクション",
+"diagnostic": true,
+"question": "提案書AIのワークフローで、Salesforce上の案件ステージが「提案準備」に変更されたことを検知して起動する仕組みを採用しました。このトリガーはどの種別に該当しますか。",
+"choices": {
+"A": "Webhook",
+"B": "スケジュールトリガー",
+"C": "フォーム送信トリガー",
+"D": "イベントトリガー"
+},
+"correct": "D",
+"explanation": "Salesforceの案件ステージという「システム内の状態変化」を検知してワークフローが起動しているため、イベントトリガーです。営業担当者が手動でステージを変更していますが、トリガーの起点は「人間の入力行為」ではなく「CRMのステータスの値が変化したこと」です。フォーム送信トリガーは新規の入力・送信行為がきっかけであり、既存レコードの状態変更はイベントトリガーに分類されます。　📖 出典：公式テキスト p.252",
+"sourcePage": 252,
+"sourceKind": "official",
+"hint": [
+"イベントトリガー",
+"フォーム送信トリガー",
+"Webhook",
+"状態変化"
+]
+},
+{
+"id": 4003,
+"chapter": "Ch04",
+"section": "ワークフロー設計 変数と条件分岐",
+"diagnostic": true,
+"question": "提案書生成ワークフローで、以下の3つの処理にそれぞれ最も適切な条件分岐の種類を当てはめてください。X：業界情報に基づいて「製造業向け」「金融向け」「小売向け」「汎用」の4つのテンプレートに振り分ける Y：案件規模が1,000万円以上なら詳細版、未満なら簡易版を選択する Z：過去提案書の検索結果から受注した提案書のみを通過させ、失注した提案書を除外する",
+"choices": {
+"A": "X=If/Else, Y=ルーティング, Z=フィルタリング",
+"B": "X=ルーティング, Y=If/Else, Z=フィルタリング",
+"C": "X=ルーティング, Y=フィルタリング, Z=If/Else",
+"D": "X=フィルタリング, Y=If/Else, Z=ルーティング"
+},
+"correct": "B",
+"explanation": "Xは4つの処理経路への振り分けなのでルーティングです。Yは2つの経路への分岐なのでIf/Elseです。Zは条件を満たすデータのみを通過させる「通過/遮断」の選別なのでフィルタリングです。判別の決め手は、ルーティングが「3つ以上の多方向」、If/Elseが「二択」、フィルタリングが「通過/遮断」です。　📖 出典：公式テキスト p.266",
+"sourcePage": 266,
+"sourceKind": "official",
+"hint": [
+"If/Else",
+"ルーティング",
+"フィルタリング",
+"条件分岐"
+]
+},
+{
+"id": 4004,
+"chapter": "Ch04",
+"section": "コンテキストエンジニアリング概論",
+"diagnostic": true,
+"question": "提案書AIが、前回の商談で顧客が示した予算上限を踏まえて見積もり金額を調整しました。しかし別の顧客への提案書では、社内マニュアルに記載された最新の料金表を参照して見積もりを作成しました。前者と後者が参照した情報の種類として最も適切な組み合わせはどれですか。",
+"choices": {
+"A": "前者＝外部知識（RAG）、後者＝会話の記憶",
+"B": "前者＝会話の記憶、後者＝外部知識（RAG）",
+"C": "前者＝システムプロンプト、後者＝外部知識（RAG）",
+"D": "前者＝ユーザープロンプト、後者＝システムプロンプト"
+},
+"correct": "B",
+"explanation": "「前回の商談で確認した予算上限」は過去の対話で得られた情報であり、会話の記憶です。「社内マニュアルの最新料金表」はナレッジベースから検索して取得した情報であり、外部知識（RAG）です。記憶は「過去のやり取りの蓄積」、RAGは「外部ナレッジベースからの検索」という違いで判別します。　📖 出典：公式テキスト p.285",
+"sourcePage": 285,
+"sourceKind": "official",
+"hint": [
+"短期メモリ",
+"長期メモリ",
+"外部知識（RAG）",
+"会話の記憶"
+]
+},
+{
+"id": 4051,
+"chapter": "Ch04",
+"section": "自動化レベルの進化論と実務における最適解",
+"diagnostic": true,
+"question": "自動化レベルのLv.3（ワークフロー）とLv.4（自律型エージェント）を区別する最も重要な境界線はどれですか。",
+"choices": {
+"A": "外部システムと連携しているかどうか",
+"B": "フローの構造自体をAIエージェントが作ったかどうか",
+"C": "人間が処理を開始するかどうか",
+"D": "LLMを使っているかどうか"
+},
+"correct": "B",
+"explanation": "Lv.3とLv.4の境界線は「フローの構造自体をAIエージェントが作ったか」です。処理の順序とロジックが人間によって事前設計されていればLv.3（電車）、AIエージェントが自ら計画を立てて実行していればLv.4（タクシー）です。自動化が進んでいても、フローが人間設計である限りLv.3です。　📖 出典：公式テキスト p.234",
+"sourcePage": 234,
+"sourceKind": "derived",
+"hint": [
+"Lv.3 ワークフロー",
+"Lv.4 自律型エージェント",
+"電車とタクシーの比喩"
+]
+},
+{
+"id": 4052,
+"chapter": "Ch04",
+"section": "自動化レベルの進化論と実務における最適解",
+"diagnostic": false,
+"question": "MVPアプローチの本質として最も適切な説明はどれですか。",
+"choices": {
+"A": "最初から完全自動のLv.4を目指し、一気に導入する",
+"B": "最小限だが実際に価値を提供できる形で素早く検証し、段階的に進化させる",
+"C": "品質の低い試作品を本番環境に投入して問題を発見する",
+"D": "Lv.3の検証が成功したら、Lv.3をとばしてLv.4に進む"
+},
+"correct": "B",
+"explanation": "MVPアプローチは「最小限だが実際に価値を提供できる製品」で素早く検証し、段階的に進化させる考え方です。Lv.2のカスタムチャットボットは2週間程度で構築でき、1ヶ月の検証で定量的なデータが得られれば、Lv.3への投資判断に説得力が生まれます。　📖 出典：公式テキスト p.240",
+"sourcePage": 240,
+"sourceKind": "derived",
+"hint": [
+"MVP",
+"段階的導入",
+"アジャイル"
+]
+},
+{
+"id": 4053,
+"chapter": "Ch04",
+"section": "自動化レベルの進化論と実務における最適解",
+"diagnostic": false,
+"question": "自動化レベルLv.2（カスタムチャットボット）の本質的な限界として最も適切な説明はどれですか。",
+"choices": {
+"A": "ナレッジベースを設定できないため、専門知識を持たせられない",
+"B": "基本的に「人間が質問し、AIエージェントが回答する」対話型にとどまり、自らが業務を開始したり外部システムと連携したりすることが難しい",
+"C": "LLMを利用しないため、文章生成の品質が低い",
+"D": "構築にエンジニアリングが必要で、ノーコードでは実現できない"
+},
+"correct": "B",
+"explanation": "Lv.2の限界は、基本的な構造が「人間が質問し、AIエージェントが回答する」という対話型であり、AIエージェントが自ら業務を開始したり、処理を継続的に進めたりするわけではない点です。また、外部システムとの連携（DB参照、承認フロー自動化、他システムへの書き込み）も通常この段階の範囲を超えます。　📖 出典：公式テキスト p.232",
+"sourcePage": 232,
+"sourceKind": "derived",
+"hint": [
+"Lv.2 カスタムチャットボット",
+"受動的",
+"外部システム連携"
+]
+},
+{
+"id": 4054,
+"chapter": "Ch04",
+"section": "ワークフロー設計 トリガーとアクション",
+"diagnostic": true,
+"question": "以下の3つのワークフローに最も適切なトリガー種別の組み合わせはどれですか。(1) 毎週金曜17時に、週間の提案書作成状況をレポートする (2) 営業担当者が急ぎの提案書作成を依頼するためにフォームを送信する (3) 顧客管理システムに新規顧客が登録されたことを検知して、ウェルカムメールの下書きを生成する",
+"choices": {
+"A": "(1)スケジュール、(2)フォーム送信、(3)Webhook",
+"B": "(1)イベント、(2)フォーム送信、(3)イベント",
+"C": "(1)スケジュール、(2)フォーム送信、(3)イベント",
+"D": "(1)スケジュール、(2)イベント、(3)フォーム送信"
+},
+"correct": "C",
+"explanation": "(1)は「毎週金曜17時」という時刻が固定されているため、スケジュールトリガーです。(2)は営業担当者が意図的にフォームを送信する行為がきっかけのため、フォーム送信トリガーです。(3)は顧客管理システム内の「新規顧客が登録された」という状態変化を検知するため、イベントトリガーです。　📖 出典：公式テキスト p.243",
+"sourcePage": 243,
+"sourceKind": "derived",
+"hint": [
+"スケジュールトリガー",
+"フォーム送信トリガー",
+"イベントトリガー",
+"Webhook"
+]
+},
+{
+"id": 4055,
+"chapter": "Ch04",
+"section": "ワークフロー設計 トリガーとアクション",
+"diagnostic": false,
+"question": "Webhookとイベントトリガーはどちらもシステムやデータの変化に反応して起動しますが、両者の最も重要な違いはどれですか。",
+"choices": {
+"A": "Webhookはスケジュールに従って起動し、イベントトリガーはリアルタイムで起動する",
+"B": "イベントトリガーはワークフロー側が対象システムの変化を監視して起動し、Webhookは外部システム側が変化をワークフローへ通知することで起動する",
+"C": "Webhookは人間の操作が必要で、イベントトリガーは自動的に起動する",
+"D": "イベントトリガーはSaaS専用で、WebhookはAPI経由でのみ利用できる"
+},
+"correct": "B",
+"explanation": "イベントトリガーでは、ワークフロー側が対象システムの変化を確認して起動します。これに対しWebhookでは、外部システム側が変化の発生をワークフローへ通知することで起動します。変化を検知する主体が異なる点が本質的な違いです。　📖 出典：公式テキスト p.244",
+"sourcePage": 244,
+"sourceKind": "derived",
+"hint": [
+"Webhook",
+"イベントトリガー",
+"プッシュ型",
+"ポーリング型"
+]
+},
+{
+"id": 4056,
+"chapter": "Ch04",
+"section": "ワークフロー設計 トリガーとアクション",
+"diagnostic": false,
+"question": "提案書生成ワークフローの中で、Salesforceから顧客の業界情報と案件規模を取得する処理と、取得したデータから提案書に記載すべき課題ポイントを抽出する処理があります。前者と後者はそれぞれどのアクション種別に該当しますか。",
+"choices": {
+"A": "前者＝データ抽出、後者＝コンテンツ生成",
+"B": "前者＝APIコール、後者＝データ抽出",
+"C": "前者＝APIコール、後者＝APIコール",
+"D": "前者＝データ抽出、後者＝APIコール"
+},
+"correct": "B",
+"explanation": "SalesforceのAPIを呼び出して顧客情報を取得する処理はAPIコールです。取得済みのデータから必要な情報を取り出す処理はデータ抽出です。「外部サービスの窓口を介して取得する行為」がAPIコール、「手元にあるデータから情報を取り出す行為」がデータ抽出と区別できます。　📖 出典：公式テキスト p.245",
+"sourcePage": 245,
+"sourceKind": "derived",
+"hint": [
+"APIコール",
+"データ抽出",
+"データ処理"
+]
+},
+{
+"id": 4057,
+"chapter": "Ch04",
+"section": "ワークフロー設計 トリガーとアクション",
+"diagnostic": false,
+"question": "ワークフロー設計においてHuman-in-the-Loop（人間への引き渡し）が重要視される理由として最も適切なものはどれですか。",
+"choices": {
+"A": "AIエージェントよりも人間のほうが常に正確なため",
+"B": "完全自動化を目指しつつ、AIエージェントが判断できないまたは判断させるべきでないケースを人間に戻すパスを明示的に設計することで、ガバナンスを維持しながら自動化を進めるため",
+"C": "法律でAIエージェントによる完全自動化が禁止されているため",
+"D": "Human-in-the-Loopを設けることでワークフローの処理速度が上がるため"
+},
+"correct": "B",
+"explanation": "完全自動化ではなく、人間の判断が必要な箇所を明示的に設計することが、ガバナンスを維持しながら自動化を進める上で不可欠です。エラーハンドリングとも直結し、AIエージェントが処理できないまたは処理すべきでないケースを人間に戻すパスを明確にしておくことが、AIエージェントを組織の中で安全に運用するための条件です。　📖 出典：公式テキスト p.247",
+"sourcePage": 247,
+"sourceKind": "derived",
+"hint": [
+"Human-in-the-Loop",
+"ガバナンス",
+"エスカレーション"
+]
+},
+{
+"id": 4058,
+"chapter": "Ch04",
+"section": "ワークフロー設計 変数と条件分岐",
+"diagnostic": false,
+"question": "ワークフローにおける「変数」の役割として最も適切な説明はどれですか。",
+"choices": {
+"A": "ワークフローの処理を開始するきっかけとなる条件",
+"B": "ワークフロー内でデータを一時的に保持する「名前付きの箱」であり、条件分岐の判断材料となるもの",
+"C": "外部システムへの接続情報を格納するセキュリティ設定",
+"D": "LLMが生成した出力を永続的に保存するストレージ"
+},
+"correct": "B",
+"explanation": "変数とは、ワークフロー内でデータを一時的に保持する「名前付きの箱」です。荷物を仕分けるときに「製造業向け」「金融向け」とラベルを貼った箱を用意するイメージです。変数の値に応じて処理を柔軟に変えられるのが条件分岐の本質です。　📖 出典：公式テキスト p.259",
+"sourcePage": 259,
+"sourceKind": "derived",
+"hint": [
+"変数",
+"条件分岐",
+"industry変数",
+"deal_size変数"
+]
+},
+{
+"id": 4059,
+"chapter": "Ch04",
+"section": "ワークフロー設計 変数と条件分岐",
+"diagnostic": false,
+"question": "提案書生成ワークフローのエラーハンドリングとして、Salesforce APIコールが失敗した場合の最も効果的な対処法はどれですか。",
+"choices": {
+"A": "ワークフロー全体を停止し、次回のトリガーまで待機する",
+"B": "エラーを無視して、顧客情報なしでドラフト生成を続ける",
+"C": "営業担当者にSlackで通知し、手動入力フォームのリンクを提供するフォールバック処理を実行する",
+"D": "自動的にLLMを切り替えて再試行する"
+},
+"correct": "C",
+"explanation": "エラーハンドリングはIf/Elseの応用であり、「正常系」と「異常系」で分岐させます。ワークフロー全体を停止すると営業担当者は提案書が生成されないまま放置されます。顧客情報なしではドラフトの品質が著しく低下します。LLMの切り替えではSalesforceとの接続問題は解決しません。異常時には人間に戻すパスを用意しておくことが実運用の基本です。　📖 出典：公式テキスト p.264",
+"sourcePage": 264,
+"sourceKind": "derived",
+"hint": [
+"エラーハンドリング",
+"フォールバック",
+"Human-in-the-Loop"
+]
+},
+{
+"id": 4060,
+"chapter": "Ch04",
+"section": "ワークフロー設計 変数と条件分岐",
+"diagnostic": false,
+"question": "条件分岐の設計において「提案の成否に最も影響する変数に絞って条件分岐を設計し、過度に細かい分岐は避けるべきである」と言われる理由として最も適切なものはどれですか。",
+"choices": {
+"A": "LLMが多すぎる条件分岐を処理できないため",
+"B": "細かく分岐させすぎるとメンテナンスが大変になり、新しい業界が加わるたびに設計変更が必要になる一方、分岐しなさすぎると業界の異なる顧客に同じ構成の提案書が届いてしまうため",
+"C": "ワークフロー設計ツールが処理できる分岐数に上限があるため",
+"D": "条件分岐を増やすほど処理時間が指数関数的に増加するため"
+},
+"correct": "B",
+"explanation": "条件分岐の設計では「どの変数で、どの粒度で分岐させるか」の判断が重要です。すべてを細かく分岐させるとメンテナンスが大変になり、新しいパターンが加わるたびに設計変更が必要になります。逆に一切分岐しないと、業界の異なる顧客に同じ構成の提案書が届いてしまいます。提案の成否に最も影響する変数に絞って設計するのが、品質と保守性のバランスが取れた実務的なアプローチです。　📖 出典：公式テキスト p.268",
+"sourcePage": 268,
+"sourceKind": "derived",
+"hint": [
+"条件分岐",
+"メンテナンス性",
+"保守性",
+"変数の粒度"
+]
+},
+{
+"id": 4061,
+"chapter": "Ch04",
+"section": "コンテキストエンジニアリング概論",
+"diagnostic": true,
+"question": "コンテキストエンジニアリングとプロンプトエンジニアリングの関係として、最も適切な説明はどれですか。",
+"choices": {
+"A": "プロンプトエンジニアリングとコンテキストエンジニアリングはまったく別の技術であり、互いに関係しない",
+"B": "プロンプトエンジニアリングはLLMへの指示の最適化に焦点を当て、コンテキストエンジニアリングは指示を含むLLMに渡す情報全体を設計する上位概念である",
+"C": "コンテキストエンジニアリングはプロンプトエンジニアリングの一部である",
+"D": "プロンプトエンジニアリングのほうがコンテキストエンジニアリングより高度な技術である"
+},
+"correct": "B",
+"explanation": "プロンプトエンジニアリングはLLMへの指示の書き方を工夫する技術であり、コンテキストエンジニアリングの一部です。コンテキストエンジニアリングは指示だけでなく、RAGで取得した外部知識、過去の会話の記憶、ツールの情報など、LLMに渡す情報全体の設計を対象とします。したがって、プロンプトエンジニアリングはコンテキストエンジニアリングの一部として位置づけられます。　📖 出典：公式テキスト p.270",
+"sourcePage": 270,
+"sourceKind": "derived",
+"hint": [
+"コンテキストエンジニアリング",
+"プロンプトエンジニアリング",
+"上位概念"
+]
+},
+{
+"id": 4062,
+"chapter": "Ch04",
+"section": "コンテキストエンジニアリング概論",
+"diagnostic": false,
+"question": "「Lost in the Middle」問題とは何ですか。最も適切な説明を選んでください。",
+"choices": {
+"A": "ワークフローの途中でエラーが発生してプロセスが停止する問題",
+"B": "LLMがコンテキストウィンドウの先頭と末尾の情報は参照しやすいが、中間部分に置かれた情報を見落としやすい傾向",
+"C": "AIエージェントが与えられたタスクの目標を途中で見失う問題",
+"D": "コンテキストウィンドウが満杯になり、新しい情報を受け取れなくなる問題"
+},
+"correct": "B",
+"explanation": "スタンフォード大学の研究によれば、LLMはコンテキストの先頭と末尾に配置された情報を参照しやすく、中間部分に置かれた情報は見落としやすい傾向があります。これを「Lost in the Middle」と呼びます。重要な情報をどの位置に配置するかが、出力品質を大きく左右します。　📖 出典：公式テキスト p.271",
+"sourcePage": 271,
+"sourceKind": "derived",
+"hint": [
+"Lost in the Middle",
+"コンテキストウィンドウ",
+"情報配置"
+]
+},
+{
+"id": 4063,
+"chapter": "Ch04",
+"section": "コンテキストエンジニアリング概論",
+"diagnostic": false,
+"question": "コンテキストエンジニアリングにおける「コンテキストの量と質のトレードオフ」について、最も適切な説明はどれですか。",
+"choices": {
+"A": "情報は多く与えるほど良く、コンテキストウィンドウを最大限に使い切るべきである",
+"B": "情報を過剰に与えると応答速度の低下・コスト増加・重要情報の埋没が起き、「何を渡すか」と同じくらい「何を渡さないか」の設計が重要である",
+"C": "コンテキストは最小限にすべきであり、システムプロンプト以外は与えないほうがよい",
+"D": "コンテキストの量よりも、使用するLLMのモデル性能のほうが出力品質に影響する"
+},
+"correct": "B",
+"explanation": "情報を過剰に与えると、主に3つの問題が生じます。第1に応答速度が低下しやすくなり、第2にトークン消費量が増えコストが高くなり、第3に本当に重要な情報が関係の薄い情報の中に埋もれてAIが適切に参照しにくくなります。そのため「何を渡すか」と同じくらい「何を渡さないか」を設計することが重要です。　📖 出典：公式テキスト p.277",
+"sourcePage": 277,
+"sourceKind": "derived",
+"hint": [
+"コンテキストの量と質",
+"情報過多",
+"トークンコスト"
+]
+},
+{
+"id": 4064,
+"chapter": "Ch04",
+"section": "コンテキストエンジニアリング概論",
+"diagnostic": false,
+"question": "提案書AIの出力品質に問題が生じたとき、最も適切な原因の切り分け順序はどれですか。",
+"choices": {
+"A": "モデルの性能を確認する → コンテキストを見直す → データ品質を確認する",
+"B": "コンテキストに必要な情報が含まれているかを確認する → 不要な情報がノイズになっていないかを確認する → 情報のフォーマットや指示の粒度を確認する → それでも解決しない場合にモデルの変更を検討する",
+"C": "データ品質を確認する → モデルの性能を確認する → コンテキストを見直す",
+"D": "まずモデルを最新版にアップグレードし、改善しなければコンテキストを見直す"
+},
+"correct": "B",
+"explanation": "コンテキストエンジニアリングの基本姿勢は「モデルを変える前に、渡している情報を見直す」ことです。出力品質の問題は多くの場合、情報の欠落、ノイズの混入、伝え方の粒度の問題に帰着します。これらを順に確認し、それでも解決しない場合に初めてモデルの変更を検討するのが効率的な切り分け手順です。　📖 出典：公式テキスト p.288",
+"sourcePage": 288,
+"sourceKind": "derived",
+"hint": [
+"原因切り分け",
+"コンテキスト設計",
+"モデル変更"
+]
+},
+{
+"id": 4065,
+"chapter": "Ch04",
+"section": "コンテキストエンジニアリング概論",
+"diagnostic": false,
+"question": "コンテキストエンジニアリングの4つの手法（書き出し・選択・圧縮・分割）のうち、「関連性の低い情報を渡すことは、渡さないことより悪い場合がある」という原則に最も関連する手法はどれですか。",
+"choices": {
+"A": "書き出し（Write）",
+"B": "選択（Select）",
+"C": "圧縮（Compress）",
+"D": "分割（Isolate）"
+},
+"correct": "B",
+"explanation": "選択（Select）は膨大な情報の中から現在のタスクに必要なものだけを取得する手法です。「選択の精度がコンテキストの品質を決定します。関連性の低い情報を渡すことは、渡さないことより悪い場合があります」と本文に明記されています。不適切な情報を渡すことでノイズが増え、LLMの回答品質が下がるリスクがあります。　📖 出典：公式テキスト p.275",
+"sourcePage": 275,
+"sourceKind": "derived",
+"hint": [
+"選択（Select）",
+"コンテキストの品質",
+"情報選択"
+]
+},
+{
+"id": 4066,
+"chapter": "Ch04",
+"section": "コンテキストエンジニアリング概論",
+"diagnostic": false,
+"question": "LLMに渡す7種類の情報のうち、「AIエージェントの役割・前提条件・制約条件・行動指針を定義するベースの設定」であり、「コンテキストエンジニアリングの土台として最初に最も時間をかけて設計すべき要素」はどれですか。",
+"choices": {
+"A": "ユーザープロンプト",
+"B": "短期メモリ",
+"C": "システムプロンプト",
+"D": "外部知識（RAG）"
+},
+"correct": "C",
+"explanation": "システムプロンプトはすべての対話に共通する、AIエージェントの役割・前提条件・制約条件・行動指針を定義するベースの設定です。コンテキストエンジニアリングの土台であり、最初に最も時間をかけて設計すべき要素です。エージェントが処理を進める中でタスクの目的を見失わないよう、「ぶれない軸」として機能します。　📖 出典：公式テキスト p.272",
+"sourcePage": 272,
+"sourceKind": "derived",
+"hint": [
+"システムプロンプト",
+"7種類の情報",
+"コンテキスト設計"
+]
+},
+{
+"id": 5001,
+"chapter": "Ch05",
+"section": "5-1 AIエージェント導入と組織文化の変革",
+"diagnostic": true,
+"question": "経理部門で請求書処理AIを導入する際、以下のうちデリゲーション範囲の設計として最も適切なものはどれですか。",
+"choices": {
+"A": "請求書処理の全ステップ（受領→OCR→仕訳→支払）をAIエージェントに完全委譲し、月次で人間がまとめてチェックする",
+"B": "全ステップで人間がAIエージェントの出力を逐一確認してから実行する",
+"C": "OCR読取は信頼度スコアに基づく自動/手動の切り分け、仕訳はHuman-in-the-Loop、支払は人間承認必須とする",
+"D": "まず支払処理のみAIエージェントに委譲し、精度が確認できたらOCR・仕訳に範囲を広げる"
+},
+"correct": "C",
+"explanation": "デリゲーション設計の原則は、業務のリスクレベルに応じた段階的設計です。Aは支払処理という高リスク業務までAIエージェントに完全委譲しており、リスクレベルとデリゲーション範囲が適合していません。Bは全ステップで人間が確認するため安全ではありますが、低リスク業務まで過剰に統制しており工数削減効果が限定的です。Dは最もリスクの高い支払処理から委譲を始めており、低リスクから段階的にという原則に反しています。Cはステップごとのリスクレベルに応じて最適なデリゲーション範囲を設計しており、段階的導入の考え方にも合致しています。　📖 出典：公式テキスト p.298",
+"sourcePage": 298,
+"sourceKind": "official",
+"hint": [
+"デリゲーション",
+"Human-in-the-Loop",
+"リスクレベル"
+]
+},
+{
+"id": 5002,
+"chapter": "Ch05",
+"section": "5-2 AIエージェント推進の組織類型",
+"diagnostic": true,
+"question": "従業員500名の中堅製造業（経理・営業・製造の3部門がAIエージェント導入を検討）で、監査法人からセキュリティ基準の統一を求められており、前回設置したCoE相当の組織が現場の反発で機能停止状態にある。この企業に現時点で最も適する組織類型と進め方はどれですか。",
+"choices": {
+"A": "中央集権型を採用する。監査法人とCFOの懸念に応えるには全社統一のガバナンスが不可欠であり、前回のCoEは運用設計の問題であって類型そのものは正しかった。今回は権限範囲を明確化した上で再設置すべきである。",
+"B": "分散型を採用する。前回のCoEが現場の反発で機能停止した事実と、経営層の「現場主導」方針を重視する。営業部門の成功例が示すように各部門が自律的に推進する方が速く、財務データのリスクは経理部門内のローカルルールで対応可能である。",
+"C": "ハイブリッド型を採用し、中央組織の役割を「承認」から「標準策定とセキュリティ監査」に限定する。前回の失敗原因は類型ではなく中央組織への権限集中にある。推進権限を現場に委譲しつつ、監査法人が求めるセキュリティ基準の策定と監査機能のみを中央に残すことで、統制と自律を両立できる。",
+"D": "ハイブリッド型を採用し、まず分散型で各部門の推進を優先した後、半年後にガバナンス基準を統一する。現場の反発が根強い現状では中央組織の再設置は時期尚早である。先に現場の成功体験を積み上げて信頼を醸成し、その実績をもとにガバナンス整備へ移行する段階的アプローチが現実的である。"
+},
+"correct": "C",
+"explanation": "前回の失敗を「類型の問題」ではなく「設計の問題」として正確に診断している点が正しい。中央組織の役割を「承認」から「標準策定と監査」に絞ることで、現場の反発原因だった意思決定の遅延を解消しつつ、監査法人が求めるガバナンスも確保できる。CFOの懸念にも応えられる唯一の選択肢。Dは財務データがすでに存在しており、ガバナンス不在の期間が生じること自体がリスク。信頼醸成と統制確立は並行して行うべき。　📖 出典：公式テキスト p.310",
+"sourcePage": 310,
+"sourceKind": "official",
+"hint": [
+"ハイブリッド型",
+"CoE",
+"ガバナンス"
+]
+},
+{
+"id": 5003,
+"chapter": "Ch05",
+"section": "5-3 人材評価と指標の再設計",
+"diagnostic": true,
+"question": "請求書処理AIの導入後、「AIエージェントによる1日の処理件数が200件に達した」という報告がありました。この指標はアウトプット指標とアウトカム指標のどちらに該当しますか。また、この指標だけでAIエージェント導入の成功を判断できますか。",
+"choices": {
+"A": "アウトカム指標であり、成功を判断できる",
+"B": "アウトプット指標であり、成功を判断できる",
+"C": "アウトプット指標であり、この指標だけでは成功を判断できない",
+"D": "アウトカム指標であり、この指標だけでは成功を判断できない"
+},
+"correct": "C",
+"explanation": "「処理件数」はAIエージェントの活動量を測るアウトプット指標です。件数が多くてもミス率が高ければ手戻りが増え、むしろ業務が悪化している可能性があります。成功の判断には「支払遅延率の低減」「仕訳ミス率の低減」などのアウトカム指標が必要です。　📖 出典：公式テキスト p.325",
+"sourcePage": 325,
+"sourceKind": "official",
+"hint": [
+"アウトプット指標",
+"アウトカム指標",
+"KPI"
+]
+},
+{
+"id": 5004,
+"chapter": "Ch05",
+"section": "5-4 チェンジマネジメント",
+"diagnostic": true,
+"question": "請求書処理AIの導入を告知した際、ベテラン経理担当者が「AIエージェントに仕訳なんて無理だ。勘定科目の判断には長年の経験が必要だ。」と発言しました。この反応は、抵抗の心理プロセスのどの段階に該当しますか。",
+"choices": {
+"A": "否認",
+"B": "抵抗",
+"C": "受容",
+"D": "否認と抵抗の中間"
+},
+"correct": "A",
+"explanation": "「AIエージェントに仕訳なんて無理だ」は、AIエージェント導入の必要性（技術的可能性）自体を認めていません。これは否認段階です。抵抗段階であれば「AIエージェントが仕訳をできることは分かるが、自分の仕事がなくなるのは嫌だ」のように、必要性を認めた上で感情的に拒否する反応になります。判別の決め手は「変革の必要性を認めているかどうか」です。　📖 出典：公式テキスト p.336",
+"sourcePage": 336,
+"sourceKind": "official",
+"hint": [
+"否認",
+"抵抗",
+"受容",
+"チェンジマネジメント"
+]
+},
+{
+"id": 5005,
+"chapter": "Ch05",
+"section": "5-5 AIエージェント推進者が現場で直面する5つの問い",
+"diagnostic": true,
+"question": "経営層から「AIエージェントの仕訳精度は保証できるのか」と聞かれました。AIエージェントストラテジストとしての回答で最も適切なものはどれですか。",
+"choices": {
+"A": "「最新のLLMは非常に高精度なので、問題ありません」",
+"B": "「精度は保証できません。まず50件のPoCで精度を測定し、その結果をもとに本格導入を判断いただけませんか」",
+"C": "「精度保証はAIベンダーの責任であり、推進者が答えるべき問いではありません」",
+"D": "「精度は100%にはなりませんので、AIエージェント導入は見送るべきです」"
+},
+"correct": "B",
+"explanation": "AIエージェントの精度を事前に保証することはできません。Aのように「問題ない」と断言すると、本番で期待を下回った際に信頼を失います。正しいアプローチは、精度を保証するのではなく「検証する方法」を提示することです。小さなPoCで実データの精度を測定し、その結果をもとに投資判断を仰ぐのがAIエージェント・ストラテジストの役割です。　📖 出典：公式テキスト p.348",
+"sourcePage": 348,
+"sourceKind": "official",
+"hint": [
+"PoC",
+"精度保証",
+"投資判断"
+]
+},
+{
+"id": 5051,
+"chapter": "Ch05",
+"section": "5-1 AIエージェント導入と組織文化の変革",
+"diagnostic": false,
+"question": "従来のITツール（ExcelやRPAなど）とAIエージェントの本質的な違いとして最も適切な説明はどれですか。",
+"choices": {
+"A": "AIエージェントは従来のITツールより高速に処理できる",
+"B": "従来のITツールは人間が操作方法を覚え指示する道具だが、AIエージェントは文脈を解釈し自ら判断を行い状況に応じて異なる行動を選択する",
+"C": "AIエージェントはコストが低いため従来のITツールを完全に代替できる",
+"D": "従来のITツールは誤りを犯すが、AIエージェントは誤りを犯さない"
+},
+"correct": "B",
+"explanation": "従来のITツールは「指示された通りに動作し、責任はすべて操作者にある道具」です。AIエージェントは「文脈を解釈し、自ら判断を行い、状況に応じて異なる行動を選択する」点で根本的に異なります。この違いにより、AIエージェント導入は操作方法の習得ではなく、役割と権限の再定義を要求します。　📖 出典：公式テキスト p.291",
+"sourcePage": 291,
+"sourceKind": "derived",
+"hint": [
+"道具",
+"同僚",
+"権限委譲"
+]
+},
+{
+"id": 5052,
+"chapter": "Ch05",
+"section": "5-1 AIエージェント導入と組織文化の変革",
+"diagnostic": true,
+"question": "Human-in-the-Loop（HITL）の役割として最も正確な説明はどれですか。",
+"choices": {
+"A": "AIエージェントの精度が低い間の一時的な措置であり、精度が向上すれば人間の確認は不要になる",
+"B": "AIエージェントの出力品質を担保する安全装置であると同時に、人間のフィードバックがAIエージェントの改善データとして蓄積される仕組みでもある",
+"C": "人間が確認するため、AIエージェントを導入する意味がなくなる",
+"D": "法律で義務付けられているため、すべてのAIエージェントの出力に人間の確認が必要である"
+},
+"correct": "B",
+"explanation": "HITLには2つの役割があります。1つは安全装置として、AIエージェントの誤りが顧客に届く前に人間が検出・修正すること。2つ目は人間の「正しい/間違っている」というフィードバックがAIエージェントの改善データとして蓄積され、出力品質の向上につながることです。Aは「精度が上がれば不要」としていますが、顧客対応のようなリスクのある業務では精度に関係なく人間の確認が価値を持ちます。　📖 出典：公式テキスト p.299",
+"sourcePage": 299,
+"sourceKind": "derived",
+"hint": [
+"Human-in-the-Loop",
+"安全装置",
+"改善データ"
+]
+},
+{
+"id": 5053,
+"chapter": "Ch05",
+"section": "5-1 AIエージェント導入と組織文化の変革",
+"diagnostic": false,
+"question": "デリゲーション（権限委譲）設計の4ステップを正しい順序で並べたものはどれですか。",
+"choices": {
+"A": "リスク評価→業務の棚卸し→デリゲーション範囲の決定→モニタリングとエスカレーションルールの策定",
+"B": "業務の棚卸し→リスク評価→デリゲーション範囲の決定→モニタリングとエスカレーションルールの策定",
+"C": "デリゲーション範囲の決定→業務の棚卸し→リスク評価→モニタリングとエスカレーションルールの策定",
+"D": "モニタリングとエスカレーションルールの策定→業務の棚卸し→リスク評価→デリゲーション範囲の決定"
+},
+"correct": "B",
+"explanation": "デリゲーションの設計は4つのステップで進めます。まず業務の棚卸しを行い、次にリスク評価として誤判断時の影響度を見積もります。そのうえでデリゲーション範囲を低リスクの業務から順に決定し、最後にモニタリングとエスカレーションのルールを策定します。　📖 出典：公式テキスト p.292",
+"sourcePage": 292,
+"sourceKind": "derived",
+"hint": [
+"デリゲーション",
+"4ステップ",
+"リスク評価"
+]
+},
+{
+"id": 5054,
+"chapter": "Ch05",
+"section": "5-1 AIエージェント導入と組織文化の変革",
+"diagnostic": false,
+"question": "経理部門の組織文化を診断する際に確認すべき3つの問いとして正しい組み合わせはどれですか。",
+"choices": {
+"A": "ミスへの許容度・新しいツールに対する受け入れ・意思決定のスピードと構造",
+"B": "AIエージェントへの知識水準・予算の規模・経営層のコミットメント",
+"C": "競合他社の動向・従業員数・過去の売上高",
+"D": "ハードスキルの水準・リスキリング実績・外部研修の受講率"
+},
+"correct": "A",
+"explanation": "組織文化を診断する際に確認すべき問いは3つあります。第1に「ミスへの許容度」、第2に「新しいツールや仕組みに対する組織の受け入れ」、第3に「意思決定のスピードと構造」です。これら3つの観点で診断を行うことで、導入時にどのような障壁が生じやすいかを事前に把握できます。　📖 出典：公式テキスト p.294",
+"sourcePage": 294,
+"sourceKind": "derived",
+"hint": [
+"組織文化診断",
+"ミスへの許容度",
+"意思決定"
+]
+},
+{
+"id": 5055,
+"chapter": "Ch05",
+"section": "5-2 AIエージェント推進の組織類型",
+"diagnostic": true,
+"question": "中央集権型（CoE主導）とハイブリッド型の境界を判断する決め手として最も適切なものはどれですか。",
+"choices": {
+"A": "CoEの人員数が一定以上かどうか",
+"B": "AIエージェントの導入予算が大きいかどうか",
+"C": "部署の自律的な裁量が実質的に確保されているかどうか",
+"D": "セキュリティ基準の数が多いかどうか"
+},
+"correct": "C",
+"explanation": "CoEが策定したルールが非常に厳格で、各部署がすべてCoEの承認を得なければならない状態になれば、実態は中央集権型に近づきます。「すべての施策にCoEの事前承認を義務づける」運用はハイブリッド型の設計としては不適切です。判別の決め手は「部署の自律的な裁量が実質的に確保されているか」にあります。　📖 出典：公式テキスト p.304",
+"sourcePage": 304,
+"sourceKind": "derived",
+"hint": [
+"CoE",
+"ハイブリッド型",
+"中央集権型",
+"自律性"
+]
+},
+{
+"id": 5056,
+"chapter": "Ch05",
+"section": "5-2 AIエージェント推進の組織類型",
+"diagnostic": false,
+"question": "分散型の推進体制が最も適しているのはどのような組織ですか。",
+"choices": {
+"A": "コンプライアンス要件が厳しい金融機関や医療機関",
+"B": "従業員数が多く、ガバナンスの統制が不可欠な大企業",
+"C": "創業3〜5年のSaaS企業や急成長中のスタートアップ",
+"D": "複数部門に機密データを扱う部署がある中堅製造業"
+},
+"correct": "C",
+"explanation": "分散型は各事業部・部署が自律的にAIエージェント導入を推進する体制です。現場のニーズに最も近い人が意思決定するため、課題の特定から実装までが圧倒的に速く、部署ごとの業務特性に最適化されたソリューションが生まれやすくなります。創業3〜5年のSaaS企業や急成長中のスタートアップに向いています。　📖 出典：公式テキスト p.301",
+"sourcePage": 301,
+"sourceKind": "derived",
+"hint": [
+"分散型",
+"スタートアップ",
+"俊敏性"
+]
+},
+{
+"id": 5057,
+"chapter": "Ch05",
+"section": "5-2 AIエージェント推進の組織類型",
+"diagnostic": false,
+"question": "ハイブリッド型のCoEが担う役割として不適切なものはどれですか。",
+"choices": {
+"A": "全社共通のAI利用ポリシー、セキュリティ基準、データ取扱いルールの策定",
+"B": "各部門のAIエージェント導入プロジェクトへの技術的な助言提供とツール選定支援",
+"C": "経理部門での成功事例・失敗事例を全社の知識として蓄積し横展開する",
+"D": "現場が得た業務改善の知識について、CoEが「全社展開に値するか」を評価・選別し、承認した事例のみを社内共有可能とする"
+},
+"correct": "D",
+"explanation": "選択肢Dは「品質担保」「学習効率の向上」という言葉で正当化されていますが、これはハイブリッド型の根幹を破壊する設計です。現場が得た知識を共有するかどうかをCoEが決める構造は、現場の自律的な学習と横展開を完全にCoEの裁量下に置くことを意味し、情報流通における中央集権型そのものです。組織学習の観点からも逆効果になります。　📖 出典：公式テキスト p.311",
+"sourcePage": 311,
+"sourceKind": "derived",
+"hint": [
+"CoE",
+"ナレッジ共有",
+"自律性"
+]
+},
+{
+"id": 5058,
+"chapter": "Ch05",
+"section": "5-3 人材評価と指標の再設計",
+"diagnostic": false,
+"question": "請求書処理AIプロジェクトにおいて、KGI（重要目標達成指標）として最も適切なものはどれですか。",
+"choices": {
+"A": "AIエージェントの1日あたりの請求書処理件数",
+"B": "月次決算の締め日を翌月10日から翌月5日に短縮",
+"C": "AIエージェント仕訳の正答率95%以上",
+"D": "経理部門のDAU（日次アクティブユーザー数）"
+},
+"correct": "B",
+"explanation": "KGIはプロジェクトの最終ゴールです。「月次決算の早期化」は請求書処理AI導入の最終的な成果目標であり、KGIに該当します。選択肢Cの「正答率95%」はKGI達成に向けた中間指標（KPI）、選択肢AとDはアウトプット指標（KPI）です。　📖 出典：公式テキスト p.326",
+"sourcePage": 326,
+"sourceKind": "derived",
+"hint": [
+"KGI",
+"KPI",
+"アウトカム指標"
+]
+},
+{
+"id": 5059,
+"chapter": "Ch05",
+"section": "5-3 人材評価と指標の再設計",
+"diagnostic": false,
+"question": "AIエージェント導入によって経理担当者の職務が「仕訳の実行」から「AIエージェントが生成した仕訳のレビューと例外処理の対応」に変わりました。この変化はリスキリングとアップスキリングのどちらに該当しますか。",
+"choices": {
+"A": "アップスキリング。経理業務を続けながらAIエージェント活用スキルを追加したため。",
+"B": "リスキリング。職務の中心が「作業実行」から「AIエージェント監督・例外対応」へ変わったため。",
+"C": "アップスキリング。経理部門に所属し続けているため。",
+"D": "リスキリング。AIツールの操作方法を新しく学んだため。"
+},
+"correct": "B",
+"explanation": "リスキリングかアップスキリングかの判別の決め手は「職務が変わるか変わらないか」です。このケースでは「仕訳の実行者」から「AIエージェント出力の監督者・例外処理の担当者」へ職務自体が変わっています。同じ経理部門に所属していても、職務内容が根本的に変わっていればリスキリングです。選択肢Dは「新しいツールを学んだ」だけではリスキリングの理由にならないため不適切です。　📖 出典：公式テキスト p.327",
+"sourcePage": 327,
+"sourceKind": "derived",
+"hint": [
+"リスキリング",
+"アップスキリング",
+"職務定義"
+]
+},
+{
+"id": 5060,
+"chapter": "Ch05",
+"section": "5-3 人材評価と指標の再設計",
+"diagnostic": false,
+"question": "KPI設計においてアウトカム指標が中心に置かれるべき理由として最も適切な説明はどれですか。",
+"choices": {
+"A": "アウトカム指標はアウトプット指標より計測が簡単だから",
+"B": "活動量指標（DAU/MAUや処理件数）だけを追い続けると、成果に結びつかない使い方が横行する「形骸化」が起きる可能性があるから",
+"C": "経営層はアウトカム指標しか理解できないから",
+"D": "アウトカム指標はKGIと同一であるから"
+},
+"correct": "B",
+"explanation": "AIエージェント導入の本当の目的は「使われること」ではなく「価値を生み出すこと」です。活動量指標だけを追い続けると、成果には結びつかない使い方が横行したり、使うこと自体が目的化してしまう形骸化が起きます。数字は積みあがっているのに、誰も「AIエージェントを使ってよかった」と感じていないという逆説的な状況が起こりえます。　📖 出典：公式テキスト p.312",
+"sourcePage": 312,
+"sourceKind": "derived",
+"hint": [
+"アウトカム指標",
+"形骸化",
+"DAU/MAU"
+]
+},
+{
+"id": 5061,
+"chapter": "Ch05",
+"section": "5-3 人材評価と指標の再設計",
+"diagnostic": false,
+"question": "AIエージェント導入プロジェクトの初期フェーズ（Discovery〜PoC）に最も適したフレームワークはどれですか。",
+"choices": {
+"A": "KGI（最終ゴールの数値目標）を厳格に設定し、毎週進捗を管理する",
+"B": "KPI（重要業績評価指標）を3〜5個設定し、毎月計測する",
+"C": "OKR（定性的な目標と定量的な成果指標のセット）を活用し、「何を目指すか」「どの仮説を検証するか」を共有する",
+"D": "DAU/MAU（日次/月次アクティブユーザー数）のみで成果を判断する"
+},
+"correct": "C",
+"explanation": "実務では、プロジェクトの初期フェーズ（Discovery〜PoC）ではOKRを用い、本格導入フェーズ（Deployment以降）ではKGIやKPIを用いる進め方が有効です。初期フェーズでは、何が有効かがまだ確定しておらず、試行錯誤を通じて方向性を探る必要があるためです。この段階では、細かな数値管理よりも「何を目指すか」「どの仮説を検証するか」を共有することが重要であり、OKRが適しています。　📖 出典：公式テキスト p.314",
+"sourcePage": 314,
+"sourceKind": "derived",
+"hint": [
+"OKR",
+"KGI",
+"KPI",
+"Discovery",
+"PoC"
+]
+},
+{
+"id": 5062,
+"chapter": "Ch05",
+"section": "5-4 チェンジマネジメント",
+"diagnostic": false,
+"question": "請求書処理AIの導入直後、処理速度が一時的に低下し、経理担当者から「前のやり方のほうが速かった」という声が出ています。プロジェクトリーダーとして最も適切な対応はどれですか。",
+"choices": {
+"A": "AIエージェントの導入を中止し、従来の作業に戻す",
+"B": "一時的な生産性低下は抵抗曲線の「谷」として正常な反応であると理解し、事前に計画した支援施策を実施する",
+"C": "処理速度の低下を経営層に報告し、プロジェクトの継続判断を仰ぐ",
+"D": "経理担当者に「慣れれば速くなる」と説得し、従来作業との並行運用を禁止する"
+},
+"correct": "B",
+"explanation": "変革導入直後の生産性低下は抵抗曲線の「谷」であり、正常な反応です。この時期にプロジェクトを中止する（選択肢A）のがチェンジマネジメントの最大の失敗パターンです。選択肢Cは谷の時期に経営層の判断を仰ぐと中止リスクが高まります。選択肢Dは心理的安全性を損ない、抵抗を強化します。事前に計画した研修やサポート施策を着実に実施し、谷を浅く短くすることが正解です。　📖 出典：公式テキスト p.337",
+"sourcePage": 337,
+"sourceKind": "derived",
+"hint": [
+"抵抗曲線",
+"谷",
+"チェンジマネジメント"
+]
+},
+{
+"id": 5063,
+"chapter": "Ch05",
+"section": "5-4 チェンジマネジメント",
+"diagnostic": true,
+"question": "経理チーム内でAIエージェントの使い方について議論する場を設けました。以下のうち、心理的安全性が「高い」状態を示すものはどれですか。",
+"choices": {
+"A": "チーム内で対立を避け、全員が賛成するまで議論を続けない方針を取っている",
+"B": "AIエージェントの使い方で失敗した担当者が、失敗の経緯と学びを率直に共有し、他メンバーから感謝された",
+"C": "リーダーが「失敗は許さない。最初から正しく使うように」と指示している",
+"D": "全員がAIエージェントに好意的な意見だけを述べ、懸念を表明する人がいない"
+},
+"correct": "B",
+"explanation": "心理的安全性とは「率直に発言しても罰せられない信頼関係」です。選択肢Bは失敗を報告しても罰されず、むしろ学びとして評価される状態を示しています。選択肢Aは対立回避であり心理的安全性が低い状態、選択肢Cは失敗が罰せられる環境、選択肢Dは懸念を表明できない状態であり、いずれも心理的安全性が低いことを示しています。　📖 出典：公式テキスト p.338",
+"sourcePage": 338,
+"sourceKind": "derived",
+"hint": [
+"心理的安全性",
+"エドモンドソン",
+"Fail-Fast"
+]
+},
+{
+"id": 5064,
+"chapter": "Ch05",
+"section": "5-4 チェンジマネジメント",
+"diagnostic": false,
+"question": "抵抗段階（否認の次の段階）にある経理担当者に対して最も有効な対応はどれですか。",
+"choices": {
+"A": "AIエージェントが技術的に可能であることをデータと事例で示す",
+"B": "「AIエージェントを使えなければ仕事がなくなる」と伝え、危機感を持ってもらう",
+"C": "変化後の役割やキャリアの見通しを具体的に示し、不安や疑問を率直に表明できる場を設ける",
+"D": "AIエージェントの精度データを提示し、誤りがほとんどないことを証明する"
+},
+"correct": "C",
+"explanation": "抵抗段階は変革の必要性は理解していても、感情的には受け入れられない段階です。問題は知識不足ではなく感情の不安や喪失感に移っているため、論理的な説明だけでは不十分です。ここで必要なのは、変化の先に自分の役割が残ることを具体的に示すことと、不安や疑問を率直に表明できる場を設けることです。選択肢Aは否認段階への有効な対応です。選択肢Bは恐怖で動かそうとするアプローチで、中長期的に抵抗を強めます。　📖 出典：公式テキスト p.329",
+"sourcePage": 329,
+"sourceKind": "derived",
+"hint": [
+"抵抗段階",
+"否認段階",
+"キャリアパス"
+]
+},
+{
+"id": 5065,
+"chapter": "Ch05",
+"section": "5-5 AIエージェント推進者が現場で直面する5つの問い",
+"diagnostic": false,
+"question": "IT部門から「請求書データをクラウドAPIに送信して情報漏洩のリスクはないか」と聞かれたとき、AIエージェント・ストラテジストとして最も適切な対応はどれですか。",
+"choices": {
+"A": "「クラウドベンダーのセキュリティ基準を満たしているので問題ありません」と断言する",
+"B": "「送信するデータの範囲（金額・日付・品目）と送信しないデータの範囲（取引先名・口座番号）を具体的に示し、IT部門と一緒に設計をレビューする場を設ける」",
+"C": "「セキュリティリスクを完全にゼロにできないため、AIエージェント導入は見送るべきである」",
+"D": "「オンプレミス環境で処理すればクラウドへの送信は不要なので、セキュリティの問題は存在しない」"
+},
+"correct": "B",
+"explanation": "送信するデータと送信しないデータを具体的に示し、IT部門を「一緒に設計を確認する仲間」として巻き込むのが正しいアプローチです。Aはセキュリティ上の懸念に正面から答えていません。Dはオンプレミスにも別のセキュリティリスクがあり、「問題が存在しない」は不正確です。回答の核心は「何のデータを、どこに、どう渡すかを設計で制御できる」と説明することです。　📖 出典：公式テキスト p.349",
+"sourcePage": 349,
+"sourceKind": "derived",
+"hint": [
+"データマスキング",
+"クラウドAPI",
+"情報漏洩"
+]
+},
+{
+"id": 5066,
+"chapter": "Ch05",
+"section": "5-5 AIエージェント推進者が現場で直面する5つの問い",
+"diagnostic": false,
+"question": "経理担当者から「AIエージェントが仕訳を間違えたら、私が責任を取らされるんですか？」と聞かれました。最も適切な回答はどれですか。",
+"choices": {
+"A": "「AIエージェントが間違えた場合の責任はAIベンダーが負うので、あなたの責任にはなりません」",
+"B": "「AIエージェントの判断をそのまま使うわけではなく、あなたが確認して承認するフローです。責任構造は今の業務と同じです」",
+"C": "「AIエージェントは間違えることはないので、責任の問題は発生しません」",
+"D": "「責任はすべて経営層にあるので、あなたが心配する必要はありません」"
+},
+"correct": "B",
+"explanation": "AIエージェントには責任を負わせることができないため、Aは誤りです。Cは不正確です。Dは責任を経営層に丸投げしており、担当者の役割が不明確なままです。BはHuman-in-the-Loopの設計により「AIエージェントが下書き、人間が最終判断」というフローを説明し、従来の業務と同じ責任構造であることを示しています。このように説明することで、「AIエージェントのせいで新しい責任を負わされる」という不安を解消できます。　📖 出典：公式テキスト p.350",
+"sourcePage": 350,
+"sourceKind": "derived",
+"hint": [
+"責任構造",
+"Human-in-the-Loop",
+"法的責任"
+]
+},
+{
+"id": 5067,
+"chapter": "Ch05",
+"section": "5-5 AIエージェント推進者が現場で直面する5つの問い",
+"diagnostic": false,
+"question": "CFOから「AIエージェントのROIは見込めるのか」と聞かれたとき、AIエージェント・ストラテジストとして最も適切な答え方はどれですか。",
+"choices": {
+"A": "「確定したROIは保証できないため、回答は控えさせてください」と伝える",
+"B": "詳細な5年間のROI試算書を作成して提出し、数値の確実性を強調する",
+"C": "「定型請求書の70%をAIエージェントが処理できれば年間約420万円の削減になります。この前提が正しいかを50件のPoCで検証します。PoC費用は50万円、期間は1ヶ月です。結果を見てから本格投資を判断いただけませんか」と提案する",
+"D": "「投資対効果は導入後1年で必ず黒字になります」と断言する"
+},
+"correct": "C",
+"explanation": "AIエージェント導入におけるROIの試算は、出力品質や業務への適合度が導入前の時点では完全に確定できないため難しいです。「やってみなければ分からない」とだけ答えるのも、不確実な数値を確定値のように示すのも不適切です。重要なのは、前提条件付きでROIを試算し、その前提が成り立つかをPoCで検証するという形で説明することです。小さな検証費用で判断材料を提供するアプローチが予算獲得の鉄則です。　📖 出典：公式テキスト p.343",
+"sourcePage": 343,
+"sourceKind": "derived",
+"hint": [
+"ROI",
+"PoC",
+"前提条件付き試算"
+]
+},
+{
+"id": 6001,
+"chapter": "Ch06",
+"section": "Step1: Discovery — AI適合性診断",
+"diagnostic": true,
+"question": "人事部門の採用プロセスで、以下の4つの業務をAIエージェント化の候補として検討しています。AI適合性が最も高いものはどれですか。",
+"choices": {
+"A": "面接官と候補者のスケジュール調整",
+"B": "月間2,000件の応募書類から、求人要件との適合度を評価して一次スクリーニングを行う",
+"C": "最終面接後の採用/不採用の経営判断",
+"D": "内定者への入社手続き書類の郵送"
+},
+"correct": "B",
+"explanation": "書類選考は非構造化データである職務経歴書の読解が中心であり、文脈に応じた柔軟な判断が必要で、かつHuman-in-the-Loopで補完可能なため、AI適合性が高い業務です。Aはスケジュール調整であり定型処理で自動化可能ですが、LLMによる判断が必要な業務ではありません。Cは経営判断であり、ミスの許容度が極めて低いためAIエージェントへの委譲は不適切です。Dは物理的な操作を伴う業務です。　📖 出典：公式テキスト p.357",
+"sourcePage": 357,
+"sourceKind": "official",
+"hint": [
+"AI適合性診断",
+"Human-in-the-Loop",
+"非構造化データ"
+]
+},
+{
+"id": 6002,
+"chapter": "Ch06",
+"section": "Step1: Discovery — 優先順位マトリクス",
+"diagnostic": false,
+"question": "採用スクリーニングAIの導入で、以下の活動を行いました。5Dモデルのどのステップに該当しますか。「スクリーニング業務を6ステップに分解し、各ステップをAIエージェントに任せるか人間が担うかを決めた」",
+"choices": {
+"A": "Step 1: Discovery",
+"B": "Step 2: Definition",
+"C": "Step 3: Design",
+"D": "Step 4: Development"
+},
+"correct": "B",
+"explanation": "業務をフローチャートレベルで構造化し、AIエージェントと人間の役割分担を定義する活動はDefinitionです。Discoveryでは「スクリーニングに問題がある」という発見までが範囲であり、6ステップへの分解はDefinitionの成果物です。　📖 出典：公式テキスト p.366",
+"sourcePage": 366,
+"sourceKind": "official",
+"hint": [
+"5Dモデル",
+"Definition",
+"フローチャート",
+"役割分担"
+]
+},
+{
+"id": 6003,
+"chapter": "Ch06",
+"section": "Step3: Design — セキュリティ設計",
+"diagnostic": true,
+"question": "採用スクリーニングAIの設計で、応募書類をAIエージェントに送信する前に氏名・性別・年齢をマスキングする処理を設計しました。この設計はDesignの3領域のどれに該当しますか。",
+"choices": {
+"A": "コンテキスト設計",
+"B": "I/O設計",
+"C": "セキュリティ設計",
+"D": "すべての領域に該当する"
+},
+"correct": "C",
+"explanation": "入力データのマスキングはAIエージェントに何を見せるかの制限であり、アクセス制御にあたります。セキュリティ設計の領域に該当します。コンテキスト設計はプロンプトや指示の設計、I/O設計はデータの形式・構造の設計です。　📖 出典：公式テキスト p.377",
+"sourcePage": 377,
+"sourceKind": "official",
+"hint": [
+"セキュリティ設計",
+"アクセス制御",
+"マスキング",
+"バイアス防止"
+]
+},
+{
+"id": 6004,
+"chapter": "Ch06",
+"section": "Step4: Development & PoC — プロトタイピング",
+"diagnostic": true,
+"question": "採用スクリーニングAIのプロトタイプをワークフローツールで構築し、テスト用の応募書類50件で精度を検証しました。この活動は5Dモデルのどのステップに該当しますか。",
+"choices": {
+"A": "Step 2: Definition",
+"B": "Step 3: Design",
+"C": "Step 4: Development & PoC",
+"D": "Step 5: Deployment & Scale"
+},
+"correct": "C",
+"explanation": "プロトタイプの構築とテスト用データによるサンドボックス検証は、Step 4のDevelopmentの活動です。判別の決め手は「テストデータを使い、隔離環境で検証している」点です。実データ・実ユーザーによる検証であればStep 5のパイロットに該当します。　📖 出典：公式テキスト p.386",
+"sourcePage": 386,
+"sourceKind": "official",
+"hint": [
+"Development & PoC",
+"サンドボックス",
+"プロトタイプ",
+"パイロット"
+]
+},
+{
+"id": 6005,
+"chapter": "Ch06",
+"section": "Step5: Deployment & Scale — AI-SECIモデル",
+"diagnostic": true,
+"question": "採用スクリーニングAIの運用中、ベテラン人事担当者がAIエージェントのスコアリングの癖を発見し、その知見を明文化してプロンプトに反映した結果、AI精度が向上しました。改善されたAIエージェントの出力を見た新人担当者が、同様の判断力を自然に習得しました。この一連のプロセスを最も適切に表す概念はどれですか。",
+"choices": {
+"A": "フィードバックループ",
+"B": "Human-in-the-Loop",
+"C": "AI-SECIモデル",
+"D": "SECIモデル"
+},
+"correct": "C",
+"explanation": "「人間の暗黙知がAIエージェントへのフィードバックとして形式知化され、改善され、改善されたAIエージェントを通じて人間が新たな暗黙知を獲得する」という、人間とAIエージェントの間の知識循環です。従来のSECIモデルは「人間同士」の知識変換であり、AIエージェントがサイクルの中核に入っている点でAI-SECIモデルと区別されます。　📖 出典：公式テキスト p.395",
+"sourcePage": 395,
+"sourceKind": "official",
+"hint": [
+"AI-SECIモデル",
+"SECIモデル",
+"知識循環",
+"暗黙知",
+"形式知"
+]
+},
+{
+"id": 6051,
+"chapter": "Ch06",
+"section": "Step1: Discovery — 5Dモデル全体像",
+"diagnostic": true,
+"question": "5Dモデルを構成する5つのステップとして正しいものはどれですか。",
+"choices": {
+"A": "Discovery → Definition → Design → Development & PoC → Deployment & Scale",
+"B": "Discovery → Definition → Development → Deployment → Delivery",
+"C": "Diagnosis → Definition → Design → Development → Deployment",
+"D": "Discovery → Design → Development → Deployment → Deliver"
+},
+"correct": "A",
+"explanation": "5DモデルはDiscovery、Definition、Design、Development & PoC、Deployment & Scaleの5ステップで構成されます。頭文字がすべてDであることから「5Dモデル」と呼びます。　📖 出典：公式テキスト p.353",
+"sourcePage": 353,
+"sourceKind": "derived",
+"hint": [
+"5Dモデル",
+"Discovery",
+"Definition",
+"Design",
+"Development",
+"Deployment"
+]
+},
+{
+"id": 6052,
+"chapter": "Ch06",
+"section": "Step1: Discovery — ボトルネック特定",
+"diagnostic": false,
+"question": "Discoveryにおけるボトルネックの特定で、ボトルネックとして特定すべき業務の特徴として正しいものをすべて含む選択肢はどれですか。",
+"choices": {
+"A": "処理に時間がかかりすぎている、ミスが頻発している",
+"B": "特定の担当者に依存している、反復的で付加価値が低い",
+"C": "処理に時間がかかりすぎている、ミスが頻発している、特定の担当者に依存している、反復的で付加価値が低い",
+"D": "技術的に新しい処理を含む、担当者が不満を持っている"
+},
+"correct": "C",
+"explanation": "ボトルネックの特徴として本文には「処理に時間がかかりすぎている」「ミスが頻発している」「特定の担当者に依存している」「反復的で付加価値が低い」の4点が挙げられています。これらすべてが該当します。　📖 出典：公式テキスト p.353",
+"sourcePage": 353,
+"sourceKind": "derived",
+"hint": [
+"ボトルネック",
+"Discovery",
+"業務分析"
+]
+},
+{
+"id": 6053,
+"chapter": "Ch06",
+"section": "Step1: Discovery — AI適合性診断",
+"diagnostic": false,
+"question": "AIエージェントによる解決に適していない業務の例として、本文が挙げているものはどれですか。",
+"choices": {
+"A": "非構造化データを大量に処理する業務",
+"B": "文脈に応じた柔軟な判断が必要な業務",
+"C": "100%の正確性が法的に要求される業務",
+"D": "Human-in-the-Loopで補完できる業務"
+},
+"correct": "C",
+"explanation": "AI適合性が低い業務として本文は「100%の正確性が法的に要求される業務」「扱うデータが極秘で外部APIに送信できない業務」「対人関係や共感が本質的な業務」「物理的な操作が伴う業務」を挙げています。A・B・DはむしろAI適合性が高い業務の条件です。　📖 出典：公式テキスト p.354",
+"sourcePage": 354,
+"sourceKind": "derived",
+"hint": [
+"AI適合性",
+"Discovery",
+"法的要求",
+"アクセス制御"
+]
+},
+{
+"id": 6054,
+"chapter": "Ch06",
+"section": "Step1: Discovery — 優先順位マトリクス",
+"diagnostic": true,
+"question": "Discoveryで複数のAI化候補が見つかりました。優先順位を判断するための最も適切なアプローチはどれですか。",
+"choices": {
+"A": "最も技術的に難しい業務から着手し、技術力を証明する",
+"B": "「効果の大きさ」と「実現の難易度」の2軸でマトリクスを作り、効果が大きく実現が容易な業務を最優先にする",
+"C": "経営層が最も関心を持っている業務から着手する",
+"D": "すべての候補を同時に着手し、最も早く成果が出たものを採用する"
+},
+"correct": "B",
+"explanation": "限られたリソースで最大の成果を出すには、「効果が大きく実現が容易」な業務から着手するのが合理的です。Aは技術的に難しい業務から始めると成果が出るまでに時間がかかり社内の支持を失うリスクがあります。Dはリソースが分散して、どの業務も中途半端になる可能性があります。　📖 出典：公式テキスト p.358",
+"sourcePage": 358,
+"sourceKind": "derived",
+"hint": [
+"優先順位マトリクス",
+"クイックウィン",
+"Discovery"
+]
+},
+{
+"id": 6055,
+"chapter": "Ch06",
+"section": "Step1: Discovery — クイックウィン選定",
+"diagnostic": false,
+"question": "採用スクリーニングAIの導入で、エンジニア職を最初の対象として選定した根拠として最も適切なものはどれですか。",
+"choices": {
+"A": "エンジニア職は応募数が少なく、テストが容易だから",
+"B": "スキル要件が技術的に明確でAIエージェントの評価精度が出やすく、応募数が多いため効果も大きいから",
+"C": "エンジニア職の採用担当者がAIエージェントに最も詳しいから",
+"D": "エンジニア職の選考基準が最も曖昧で、AIエージェントの柔軟性が活かせるから"
+},
+"correct": "B",
+"explanation": "クイックウィンの選定基準は「短期間で成果が出る」「成果が定量化できる」「低リスクで実施できる」です。エンジニア職はスキル要件が明確でAI精度が出やすく、応募数が多いため効果も大きい。営業職や管理職のような定性的評価が中心の職種より、最初のMVPとして適しています。　📖 出典：公式テキスト p.359",
+"sourcePage": 359,
+"sourceKind": "derived",
+"hint": [
+"クイックウィン",
+"MVP",
+"Discovery",
+"エンジニア職"
+]
+},
+{
+"id": 6056,
+"chapter": "Ch06",
+"section": "Step2: Definition — 要件定義書",
+"diagnostic": false,
+"question": "採用スクリーニングAIの要件定義書で「1件あたりの処理時間は30秒以内とする」という記載があります。これは要件定義書の4構成要素のどれに該当しますか。",
+"choices": {
+"A": "機能要件",
+"B": "非機能要件",
+"C": "制約条件",
+"D": "前提条件"
+},
+"correct": "B",
+"explanation": "「30秒以内」は処理速度に関する非機能要件です。機能要件は「何をするか」（スキル抽出・スコアリングなど）、非機能要件は「どの水準で実現するか」（応答速度・安定性・可用性など）です。制約条件は守らなければならないルール、前提条件はあらかじめ満たされているとみなす条件です。　📖 出典：公式テキスト p.361",
+"sourcePage": 361,
+"sourceKind": "derived",
+"hint": [
+"非機能要件",
+"機能要件",
+"Definition",
+"要件定義書"
+]
+},
+{
+"id": 6057,
+"chapter": "Ch06",
+"section": "Step2: Definition — ペルソナ定義",
+"diagnostic": false,
+"question": "採用スクリーニングAIのペルソナとして「エンジニアリングマネージャー」を定義した結果、導き出された機能要件として最も適切なものはどれですか。",
+"choices": {
+"A": "応募書類のPDFからテキストを自動抽出する機能",
+"B": "スコアの根拠を「Python経験5年、要件3年以上 → ◎」のようにSection別に提示する機能",
+"C": "応募者に結果通知メールを自動送信する機能",
+"D": "応募書類を職種別に自動分類する機能"
+},
+"correct": "B",
+"explanation": "エンジニアリングマネージャーのペルソナの要求は「スコアの根拠が欲しい。根拠がないスコアは信用できない」です。スコアだけでなく、各スキル要件に対する評価根拠をSection別に提示する機能が、このペルソナから導き出されます。A・C・Dはペルソナの要求とは直接結びつかない機能です。　📖 出典：公式テキスト p.368",
+"sourcePage": 368,
+"sourceKind": "derived",
+"hint": [
+"ペルソナ定義",
+"Definition",
+"機能要件",
+"エンジニアリングマネージャー"
+]
+},
+{
+"id": 6058,
+"chapter": "Ch06",
+"section": "Step2: Definition — 合格基準",
+"diagnostic": false,
+"question": "Definitionで設定する「合格基準」とKPIの違いについて、最も正確に説明しているものはどれですか。",
+"choices": {
+"A": "合格基準は運用中の継続的な成果測定に使う指標であり、KPIはPoCの合否を判定する一回限りの基準である",
+"B": "合格基準はPoCの合否を判定する一回限りの基準であり、KPIは運用中の継続的な成果測定に使う指標である",
+"C": "合格基準とKPIは同じ概念であり、どちらも数値で設定すればよい",
+"D": "合格基準はDeploymentで設定し、KPIはDefinitionで設定する"
+},
+"correct": "B",
+"explanation": "合格基準は「PoCの合否を判定する一回限りの基準」、KPIは「運用中の継続的な成果測定に使う指標」です。この区別はDefinitionの重要な論点です。合格基準が事前に決まっていなければ、PoCの結果を見て「これで十分なのか」が主観的判断になります。　📖 出典：公式テキスト p.363",
+"sourcePage": 363,
+"sourceKind": "derived",
+"hint": [
+"合格基準",
+"KPI",
+"Definition",
+"PoC"
+]
+},
+{
+"id": 6059,
+"chapter": "Ch06",
+"section": "Step3: Design — コンテキスト設計",
+"diagnostic": true,
+"question": "採用スクリーニングAIのDesignにおいて、以下の2つの活動が行われました。XとYはそれぞれ5Dモデルのどのステップに該当しますか。活動X：「要件定義書に『スキル適合度スコアの精度90%以上』と記載した」 活動Y：「AIエージェントの出力をJSON形式で構造化し、skill_evaluationフィールドのスキーマを定義した」",
+"choices": {
+"A": "X=Design、Y=Development",
+"B": "X=Definition、Y=Design",
+"C": "X=Discovery、Y=Definition",
+"D": "X=Design、Y=Design"
+},
+"correct": "B",
+"explanation": "活動Xは要件定義書への記載であり、「何をどの品質で実現するか」を定義するDefinitionです。活動YはJSONスキーマの設計であり、「どう実現するか」を技術的に設計するDesignです。境界線は「業務要件の文書化か、技術設計か」で判断します。　📖 出典：公式テキスト p.378",
+"sourcePage": 378,
+"sourceKind": "derived",
+"hint": [
+"Definition",
+"Design",
+"JSONスキーマ",
+"要件定義書"
+]
+},
+{
+"id": 6060,
+"chapter": "Ch06",
+"section": "Step3: Design — コンテキスト設計",
+"diagnostic": false,
+"question": "Chain-of-Thought（CoT）プロンプティングがAIエージェントの精度向上に有効な理由として、本文が述べているものはどれですか。",
+"choices": {
+"A": "使用するトークン量が減り、コストが下がるため",
+"B": "LLMが一気に答えを出すよりも、段階を踏んで考えるほうが複雑な問題で正確性が上がるため",
+"C": "Few-shotの例を省略できるため、プロンプトがシンプルになるため",
+"D": "AIエージェントが自律的に推論モデルを選択できるようになるため"
+},
+"correct": "B",
+"explanation": "Chain-of-Thoughtが有効な理由は、LLMが「一気に答えを出す」よりも「段階を踏んで考える」ほうが正確性が上がるためです。人間でも「直感で答える」より「紙に書きながら順番に考える」ほうが複雑な問題を正確に解けるのと同じ原理です。なお、推論の段階が増えると使用トークン量も増えやすいため、コストとのバランスに注意が必要です。　📖 出典：公式テキスト p.370",
+"sourcePage": 370,
+"sourceKind": "derived",
+"hint": [
+"Chain-of-Thought",
+"コンテキスト設計",
+"Design",
+"推論"
+]
+},
+{
+"id": 6061,
+"chapter": "Ch06",
+"section": "Step3: Design — I/O設計",
+"diagnostic": false,
+"question": "AIエージェントの出力をJSON形式で受け取る設計のメリットとして、本文が述べているものはどれですか。",
+"choices": {
+"A": "AIエージェントの応答速度が上がり、リアルタイム処理が可能になる",
+"B": "項目名と値を対応させて記述することで、採用管理システムが必要な情報を機械的に取り出して登録しやすくなる",
+"C": "人間が自然言語で読みやすい形式になるため、レビューコストが下がる",
+"D": "プロンプトの長さを短縮でき、コンテキスト設計が不要になる"
+},
+"correct": "B",
+"explanation": "JSONは項目名と値を対応させて記述するデータ形式であり、形式が統一されていれば採用管理システムは必要な情報を機械的に取り出して登録しやすくなります。AIエージェントが自然言語で返した場合、文章中から数値を取り出す処理が必要になり、表現の揺れでシステムが止まるリスクがあります。　📖 出典：公式テキスト p.371",
+"sourcePage": 371,
+"sourceKind": "derived",
+"hint": [
+"I/O設計",
+"JSON",
+"スキーマ",
+"バリデーション"
+]
+},
+{
+"id": 6062,
+"chapter": "Ch06",
+"section": "Step3: Design — セキュリティ設計",
+"diagnostic": false,
+"question": "採用スクリーニングAIの出力に「応募者は女性なので、コミュニケーションが高いと推定される」という評価コメントが含まれていました。この問題を防ぐためのDesign上の対策として最も適切な組み合わせはどれですか。",
+"choices": {
+"A": "システムプロンプトで「性別に基づく評価を禁止する」指示のみ",
+"B": "入力側で性別情報をマスキングし、出力側で性別に基づく表現を自動検出してブロックする",
+"C": "I/O設計でJSONスキーマにgenderフィールドを追加する",
+"D": "Few-shotに性別に基づく評価の「正しい例」を追加する"
+},
+"correct": "B",
+"explanation": "バイアス防止には入力側のアクセス制御として性別情報をマスキングし、出力側のガードレールとして性別に基づく表現を自動検出・ブロックします。プロンプト指示と出力の両側の対策が必要です。Aはプロンプト指示だけでは完全に排除できません。CはJSONに性別フィールドを追加するとバイアスを助長します。Dは不適切な評価の「正しい例」は存在しません。　📖 出典：公式テキスト p.376",
+"sourcePage": 376,
+"sourceKind": "derived",
+"hint": [
+"セキュリティ設計",
+"ガードレール",
+"アクセス制御",
+"バイアス防止"
+]
+},
+{
+"id": 6063,
+"chapter": "Ch06",
+"section": "Step4: Development & PoC — プロトタイプ・PoC・MVPの違い",
+"diagnostic": true,
+"question": "プロトタイプ・PoC・MVPの違いについて、最も正確に説明しているものはどれですか。",
+"choices": {
+"A": "プロトタイプは実際の利用者に価値を提供する製品、PoCは技術的な動作確認、MVPは実現可能性の検証",
+"B": "プロトタイプは動くかを確かめる試作品、PoCは実現可能性を確かめる検証、MVPは最小限でも価値を提供する実用品",
+"C": "プロトタイプ・PoC・MVPはすべて同じ概念で、使う場面が違うだけ",
+"D": "PoCは本番環境で実施し、プロトタイプはサンドボックスで実施する"
+},
+"correct": "B",
+"explanation": "プロトタイプは「設計した仕組みが技術的に動くかを確認するための試作品」、PoCは「その仕組みが業務上または技術上、実現可能だと示すための検証」、MVPは「実際の利用者に最小限の価値を提供できる状態まで作り込んだ製品」です。主な利用者もそれぞれ異なります。　📖 出典：公式テキスト p.380",
+"sourcePage": 380,
+"sourceKind": "derived",
+"hint": [
+"プロトタイプ",
+"PoC",
+"MVP",
+"Development"
+]
+},
+{
+"id": 6064,
+"chapter": "Ch06",
+"section": "Step4: Development & PoC — Human-in-the-Loop",
+"diagnostic": false,
+"question": "プロトタイプの検証で、ベテラン人事担当者がAIエージェントのスコアリング結果を1件ずつ確認し、誤りがあれば正しい評価を記録してプロンプト改善の根拠としました。この仕組みを何と呼びますか。",
+"choices": {
+"A": "サンドボックス",
+"B": "フィードバックループ",
+"C": "Human-in-the-Loop",
+"D": "プロトタイピング"
+},
+"correct": "C",
+"explanation": "AIエージェントの処理プロセスの中に人間による確認・判断・修正のステップを組み込む仕組みがHITLです。フィードバックループは「実行→評価→改善→再実行」の改善サイクル全体を指す概念であり、HITLはそのサイクルの中の「人間による確認・修正」に焦点を当てた概念です。　📖 出典：公式テキスト p.381",
+"sourcePage": 381,
+"sourceKind": "derived",
+"hint": [
+"Human-in-the-Loop",
+"HITL",
+"フィードバックループ",
+"Development"
+]
+},
+{
+"id": 6065,
+"chapter": "Ch06",
+"section": "Step4: Development & PoC — Go/No-Go/Pivot",
+"diagnostic": false,
+"question": "PoCの結果、スコア精度が78%で合格基準の90%に達しませんでした。次に取るべきアクションとして最も適切なものはどれですか。",
+"choices": {
+"A": "精度が不十分なので、プロジェクトを即時中止する",
+"B": "フィードバックループでプロンプトとFew-shotを改善し、再検証する",
+"C": "合格基準を78%に引き下げて、Deploymentに進む",
+"D": "全職種に展開してデータ量を増やし、精度向上を図る"
+},
+"correct": "B",
+"explanation": "合格基準に届かなかった場合、まずフィードバックループを回して改善を試みるのが適切です。1回の検証で合格基準に届かないことは珍しくなく、複数回の改善サイクルを経て精度を引き上げていくのがDevelopmentの本質です。Aは時期尚早、Cは業務上の根拠に基づく品質水準を損ないます。Dはサンドボックス検証すら通過していない段階で展開を広げるのはリスク拡散です。　📖 出典：公式テキスト p.388",
+"sourcePage": 388,
+"sourceKind": "derived",
+"hint": [
+"Go/No-Go/Pivot",
+"フィードバックループ",
+"Development",
+"合格基準"
+]
+},
+{
+"id": 6066,
+"chapter": "Ch06",
+"section": "Step4: Development & PoC — サンドボックスとパイロットの違い",
+"diagnostic": false,
+"question": "サンドボックスとパイロットの違いについて、最も正確に説明しているものはどれですか。",
+"choices": {
+"A": "サンドボックスは本番環境で実施し、パイロットは開発環境で実施する",
+"B": "サンドボックスはテストデータで隔離環境の中で動作確認を行い、パイロットは実際の利用者と実データを対象として本番に近い環境で運用上の課題を確認する",
+"C": "サンドボックスとパイロットは同じ概念であり、どちらも本番展開前の検証を指す",
+"D": "サンドボックスはDeploymentのステップで実施し、パイロットはDevelopmentのステップで実施する"
+},
+"correct": "B",
+"explanation": "サンドボックスは開発段階で使用する隔離環境であり、テストデータを使って限られた関係者が動作確認を行います。パイロットは本番導入の直前または初期段階で、実際の利用者と実データを対象として、本番に近い環境で運用上の課題を確認します。「安全に試すための検証環境」と「実運用に近い条件で確かめるための限定導入」の違いです。　📖 出典：公式テキスト p.381",
+"sourcePage": 381,
+"sourceKind": "derived",
+"hint": [
+"サンドボックス",
+"パイロット",
+"Development",
+"Deployment"
+]
+},
+{
+"id": 6067,
+"chapter": "Ch06",
+"section": "Step5: Deployment & Scale — パイロット導入",
+"diagnostic": false,
+"question": "パイロット導入が重要とされる3つの理由として、本文が挙げているものの組み合わせはどれですか。",
+"choices": {
+"A": "コストを抑えられる、短期間で完了できる、経営層の承認が得やすい",
+"B": "実環境でしか見つからない品質上の問題がある、運用の仕組みも同時に検証できる、小さな成功実績が全社展開の根拠になる",
+"C": "全職種を同時に対応できる、担当者のスキルが向上する、KPIが確定する",
+"D": "サンドボックスより精度が高い、コストが安い、技術的な証明ができる"
+},
+"correct": "B",
+"explanation": "パイロット導入が重要な3つの理由は、①実環境でしか見つからない品質上の問題がある、②AIエージェント本体だけでなく運用の仕組みも同時に検証する必要がある、③小さな成功実績がその後の展開を進める根拠になる、の3点です。　📖 出典：公式テキスト p.389",
+"sourcePage": 389,
+"sourceKind": "derived",
+"hint": [
+"パイロット",
+"Deployment",
+"クイックウィン",
+"ロールアウト"
+]
+},
+{
+"id": 6068,
+"chapter": "Ch06",
+"section": "Step5: Deployment & Scale — ロールアウトとスケーリングの違い",
+"diagnostic": false,
+"question": "ロールアウトとスケーリングの違いについて、最も正確に説明しているものはどれですか。",
+"choices": {
+"A": "ロールアウトは機能を拡張することであり、スケーリングは利用者を増やすことである",
+"B": "ロールアウトは「同じ機能をより多くの人に届ける」ことであり、スケーリングは処理能力の向上や新機能の追加など能力そのものの拡張を含む",
+"C": "ロールアウトとスケーリングは同じ概念であり、どちらも展開を広げることを指す",
+"D": "ロールアウトはDevelopmentのステップで行い、スケーリングはDeploymentのステップで行う"
+},
+"correct": "B",
+"explanation": "ロールアウトは「同じ機能を、より多くの人に届ける」ことであり、機能自体は変わりません。スケーリングはAIエージェントの処理能力や適用範囲を拡張することであり、対象業務の拡大や新しい機能の追加など、能力そのものの拡張を含みます。　📖 出典：公式テキスト p.390",
+"sourcePage": 390,
+"sourceKind": "derived",
+"hint": [
+"ロールアウト",
+"スケーリング",
+"Deployment",
+"展開"
+]
+},
+{
+"id": 6069,
+"chapter": "Ch06",
+"section": "Step5: Deployment & Scale — KPIモニタリング",
+"diagnostic": false,
+"question": "採用スクリーニングAIの成果を測る指標として、最も適切なものはどれですか。",
+"choices": {
+"A": "AIエージェントが処理した応募書類の件数",
+"B": "人事担当者のAIエージェント利用回数",
+"C": "AIスクリーニング導入後の1件あたり処理時間の短縮率と、AIエージェントが高スコアを付けた候補者の入社後パフォーマンス",
+"D": "プロンプトの改善回数"
+},
+"correct": "C",
+"explanation": "A・B・Dはアウトプット指標です。Cは「処理時間の短縮」という業務効率の改善と、「入社後パフォーマンス」というビジネス成果を組み合わせたアウトカム指標です。特に「AIエージェントが高スコアを付けた候補者が実際に活躍しているか」は、採用スクリーニングAIの本質的な成果を測る指標です。　📖 出典：公式テキスト p.390",
+"sourcePage": 390,
+"sourceKind": "derived",
+"hint": [
+"KPIモニタリング",
+"アウトカム指標",
+"アウトプット指標",
+"Deployment"
+]
+},
+{
+"id": 6070,
+"chapter": "Ch06",
+"section": "Step2: Definition — 業務フローチャート",
+"diagnostic": false,
+"question": "Definitionにおいて業務フローチャートを作成する主な目的として、本文が述べているものはどれですか。",
+"choices": {
+"A": "経営層向けの報告資料を作成するため",
+"B": "暗黙知を可視化し、AIエージェントに任せる範囲と人間が担う範囲の切り分けを明確にするため",
+"C": "プログラマーがコードをすぐに書き始められるようにするため",
+"D": "コストと工数の見積もりを出すため"
+},
+"correct": "B",
+"explanation": "Definitionの最初の作業は、対象業務をフローチャートとして詳細に可視化することです。暗黙知のまま進めると「AIエージェントに任せる範囲」と「人間が担う範囲」の切り分けが曖昧になり、後続のDesign以降で手戻りが発生します。フローチャートによる可視化はその防止策です。　📖 出典：公式テキスト p.360",
+"sourcePage": 360,
+"sourceKind": "derived",
+"hint": [
+"フローチャート",
+"Definition",
+"暗黙知",
+"役割分担"
+]
+},
+{
+"id": 6071,
+"chapter": "Ch06",
+"section": "Step5: Deployment & Scale — AI-SECIモデル詳細",
+"diagnostic": false,
+"question": "AI-SECIモデルの「表出化」フェーズに該当する活動として最も適切なものはどれですか。",
+"choices": {
+"A": "ベテラン担当者がAIエージェントのスコアリング結果を日々確認する中で、感覚的な判断を蓄積していく",
+"B": "蓄積された暗黙知が「フリーランス経歴の場合、プロジェクト数×平均期間で実質経験年数を算出すべき」というフィードバックとして明文化される",
+"C": "フィードバックがFew-shotの例に追加され、フリーランス経歴の評価パターンとして既存のプロンプトに統合される",
+"D": "改善されたAIエージェントのスコアリング結果を日々確認する新人担当者が、「フリーランス経歴はこう評価すべきだ」という判断力を自然に習得していく"
+},
+"correct": "B",
+"explanation": "AI-SECIモデルの表出化では、蓄積された暗黙知がAIエージェントへのフィードバックとして明文化されます。Aは共同化（日々の確認を通じた暗黙知の蓄積）、Cは連結化（フィードバックの既存プロンプトへの統合）、Dは内面化（改善されたAIを通じた新たな暗黙知の習得）に該当します。　📖 出典：公式テキスト p.393",
+"sourcePage": 393,
+"sourceKind": "derived",
+"hint": [
+"AI-SECIモデル",
+"表出化",
+"暗黙知",
+"形式知",
+"Deployment"
+]
+},
+{
+"id": 6072,
+"chapter": "Ch06",
+"section": "Step3: Design — Few-shotプロンプト",
+"diagnostic": false,
+"question": "Few-shotプロンプトを設計する際の注意点として、本文が述べているものはどれですか。",
+"choices": {
+"A": "できるだけ多くの例を入れるほど精度が上がるため、例の数を増やすことが最優先",
+"B": "明確な合格例のみを並べることで、AIエージェントに正しいパターンを学習させる",
+"C": "明確な合格例、明確な不合格例、判断が分かれやすい境界事例など、異なるパターンをバランスよく含めることが重要",
+"D": "Few-shotは古い手法であり、Chain-of-Thoughtに置き換えるべき"
+},
+"correct": "C",
+"explanation": "Few-shotはどの例を与えるかによって出力品質が大きく左右されます。偏った例だけを並べるとAIエージェントはその偏りを強く学習し、条件の異なるケースでは判断が不安定になりやすくなります。そのため、明確な合格例・不合格例・境界事例など、異なるパターンをバランスよく含めることが重要です。　📖 出典：公式テキスト p.370",
+"sourcePage": 370,
+"sourceKind": "derived",
+"hint": [
+"Few-shot",
+"コンテキスト設計",
+"Design",
+"バランス"
+]
+}
+];
+
+// 診断テスト用問題セレクター（各章から均等に5問ずつ選出）
+const DIAGNOSTIC_QUESTIONS = QUESTIONS.filter(q => q.diagnostic);
+
+// 章情報
+const CHAPTER_INFO = {
+  Ch01: { name: "Ch01 生成AI・AIエージェントの基礎", color: "#2563eb" },
+  Ch02: { name: "Ch02 業務の基礎（BPR・ECRS）", color: "#16a34a" },
+  Ch03: { name: "Ch03 データ・RAG・ガバナンス", color: "#9333ea" },
+  Ch04: { name: "Ch04 自動化レベル・ワークフロー設計", color: "#ea580c" },
+  Ch05: { name: "Ch05 人と組織・チェンジマネジメント", color: "#be185d" },
+  Ch06: { name: "Ch06 5Dモデル（Discovery→Deployment）", color: "#0891b2" },
+};
+
+
+
+</script>
+<script>
+// ========== STATE ==========
+let STATE = {
+  mode: null,       // 'diagnostic'|'chapter'|'mock'|'weak'|'review'|'interleave'
+  chapter: null,
+  queue: [],
+  idx: 0,
+  correct: 0,
+  answered: false,
+  timer: null,
+  timerSec: 0,
+  sessionResults: [],
+  currentConfidence: 0,  // 0=未選択, 1=わからない, 2=うろ覚え, 3=たぶん, 4=確信
+};
+
+// ========== STORAGE ==========
+function loadDB() {
+  try {
+    const d = JSON.parse(localStorage.getItem('aicx_db') || 'null') || {};
+    if (!d.totalAnswered) d.totalAnswered = 0;
+    if (!d.totalCorrect)  d.totalCorrect  = 0;
+    if (!d.streak)        d.streak        = 0;
+    if (!d.lastDate)      d.lastDate      = '';
+    if (!d.sessions)      d.sessions      = 0;
+    if (!d.history)       d.history       = {};
+    if (!d.srs)           d.srs           = {};
+    return d;
+  } catch { return { totalAnswered:0, totalCorrect:0, streak:0, lastDate:'', sessions:0, history:{}, srs:{} }; }
+}
+function saveDB(db) { localStorage.setItem('aicx_db', JSON.stringify(db)); }
+
+function recordAnswer(qId, wasCorrect, confidence) {
+  const db = loadDB();
+  db.totalAnswered++;
+  if (wasCorrect) db.totalCorrect++;
+  if (!db.history[qId]) db.history[qId] = [];
+  db.history[qId].push(wasCorrect);
+  if (db.history[qId].length > 5) db.history[qId].shift();
+  updateSRS(db, qId, confidence, wasCorrect);
+  saveDB(db);
+}
+
+function getWeakQuestions() {
+  const db = loadDB();
+  return QUESTIONS.filter(q => {
+    const hist = db.history[q.id];
+    if (!hist || hist.length === 0) return false;
+    const wrong = hist.filter(x => !x).length;
+    return wrong >= 1 && (wrong / hist.length) >= 0.4;
+  });
+}
+
+// ========== SRS (FSRS-inspired) ==========
+function srsDefault() {
+  return { stability: 1, difficulty: 5, reps: 0, lapses: 0, nextReview: null, stage: 'new' };
+}
+
+function addDays(isoDate, days) {
+  const d = new Date(isoDate + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// grade: 1=わからない, 2=うろ覚え, 3=たぶん, 4=確信
+// 事前信頼度+正誤の組み合わせ→実効グレード
+function effectiveGrade(confidence, wasCorrect) {
+  if (!wasCorrect) return 1;
+  // 自信があったのに正解 → Easy, 自信なかったのに正解 → Again（lucky guess）
+  if (confidence === 0) return wasCorrect ? 3 : 1;  // 未選択時のデフォルト
+  return confidence;  // 1〜4をそのまま使う
+}
+
+function updateSRS(db, qId, confidence, wasCorrect) {
+  if (!db.srs[qId]) db.srs[qId] = srsDefault();
+  const s = db.srs[qId];
+  const grade = effectiveGrade(confidence, wasCorrect);
+  const today = todayISO();
+
+  if (grade === 1) {
+    s.lapses++;
+    s.stability = Math.max(1, Math.floor(s.stability * 0.5));
+    s.nextReview = addDays(today, 1);
+  } else {
+    s.reps++;
+    const mult = { 2: 1.3, 3: 2.5, 4: 4.0 }[grade];
+    s.stability = Math.max(1, Math.round(s.stability * mult));
+    s.nextReview = addDays(today, s.stability);
+  }
+
+  // ステージ判定
+  if (s.reps === 0 && s.lapses === 0) s.stage = 'new';
+  else if (s.stability >= 21 && s.reps >= 5 && s.lapses <= 1) s.stage = 'mastered';
+  else if (s.stability >= 7 && s.reps >= 3) s.stage = 'review';
+  else s.stage = 'learning';
+}
+
+function getDueQuestions() {
+  const db = loadDB();
+  const today = todayISO();
+  return QUESTIONS.filter(q => {
+    const s = db.srs[q.id];
+    return s && s.nextReview && s.nextReview <= today;
+  }).sort((a, b) => {
+    return (db.srs[a.id].nextReview < db.srs[b.id].nextReview) ? -1 : 1;
+  });
+}
+
+function getMasteryStats() {
+  const db = loadDB();
+  const today = todayISO();
+  const stats = { new: 0, learning: 0, review: 0, mastered: 0, due: 0 };
+  QUESTIONS.forEach(q => {
+    const s = db.srs[q.id];
+    const stage = s ? s.stage : 'new';
+    stats[stage] = (stats[stage] || 0) + 1;
+    if (s && s.nextReview && s.nextReview <= today) stats.due++;
+  });
+  stats.new = stats.new || 0;
+  return stats;
+}
+
+function getQStage(qId) {
+  const db = loadDB();
+  const s = db.srs[qId];
+  return s ? s.stage : 'new';
+}
+
+function getQNextReview(qId) {
+  const db = loadDB();
+  const s = db.srs[qId];
+  return s ? s.nextReview : null;
+}
+
+// ========== 自信度UI ==========
+function setConfidence(grade) {
+  if (STATE.answered) return;
+  STATE.currentConfidence = grade;
+  [1,2,3,4].forEach(g => {
+    const btn = document.getElementById('conf-' + g);
+    if (btn) btn.classList.toggle('selected', g === grade);
+  });
+}
+
+function updateStreak() {
+  const db = loadDB();
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  if (db.lastDate === today) return;
+  if (db.lastDate === yesterday) db.streak++;
+  else if (db.lastDate !== today) db.streak = 1;
+  db.lastDate = today;
+  db.sessions++;
+  saveDB(db);
+}
+
+// ========== HOME ==========
+function initHome() {
+  const db = loadDB();
+  document.getElementById('home-total-q').textContent = QUESTIONS.length;
+  document.getElementById('stat-total').textContent = db.totalAnswered;
+  const acc = db.totalAnswered > 0 ? Math.round(db.totalCorrect / db.totalAnswered * 100) + '%' : '—';
+  document.getElementById('stat-acc').textContent = acc;
+  document.getElementById('stat-streak').textContent = db.streak;
+
+  // SRS統計
+  const ms = getMasteryStats();
+  document.getElementById('stat-due').textContent = ms.due;
+  document.getElementById('stat-new').textContent = ms.new || 0;
+  document.getElementById('stat-learning').textContent = ms.learning || 0;
+  document.getElementById('stat-review').textContent = ms.review || 0;
+  document.getElementById('stat-mastered').textContent = ms.mastered || 0;
+
+  // 今日の復習カード: 件数を動的に表示
+  const reviewCard = document.getElementById('reviewcard');
+  if (reviewCard) {
+    const dueCount = ms.due;
+    reviewCard.querySelector('.mode-desc').textContent =
+      dueCount > 0 ? `${dueCount}問が復習期限です` : 'まだ復習対象はありません';
+    if (dueCount === 0) reviewCard.classList.add('disabled');
+    else reviewCard.classList.remove('disabled');
+  }
+
+  // 弱点復習カード
+  const weak = getWeakQuestions().length;
+  const weakCard = document.getElementById('weakcard');
+  if (weakCard) {
+    if (weak === 0) weakCard.classList.add('disabled');
+    else weakCard.classList.remove('disabled');
+  }
+
+  // Ch buttons
+  const today = todayISO();
+  const grid = document.getElementById('ch-grid');
+  grid.innerHTML = '';
+  ['Ch01','Ch02','Ch03','Ch04','Ch05','Ch06'].forEach(ch => {
+    const qs = QUESTIONS.filter(q => q.chapter === ch);
+    const pct = qs.length > 0 ? Math.round(qs.filter(q => {
+      const h = db.history[q.id] || [];
+      return h.length > 0 && h[h.length-1] === true;
+    }).length / qs.length * 100) : null;
+
+    // ステージ別カウント
+    const stageCounts = { new: 0, learning: 0, review: 0, mastered: 0 };
+    qs.forEach(q => {
+      const s = db.srs[q.id];
+      stageCounts[s ? s.stage : 'new']++;
+    });
+    const dueInCh = qs.filter(q => {
+      const s = db.srs[q.id];
+      return s && s.nextReview && s.nextReview <= today;
+    }).length;
+
+    const info = CHAPTER_INFO[ch];
+    const total = qs.length;
+    const stageBar = ['new','learning','review','mastered'].map(st => {
+      const colors = { new:'var(--border)', learning:'var(--warning)', review:'#4A6FA5', mastered:'var(--success)' };
+      const w = Math.round(stageCounts[st] / total * 100);
+      return w > 0 ? `<div class="ch-stage-seg" style="width:${w}%;background:${colors[st]}"></div>` : '';
+    }).join('');
+
+    const div = document.createElement('div');
+    div.className = 'ch-btn';
+    div.innerHTML = `
+      <div class="ch-btn-badge" style="background:${info.color}">${ch}</div>
+      <div class="ch-btn-name">${info.name.replace(ch+' ','')}</div>
+      <div class="ch-stage-bar">${stageBar}</div>
+      <div class="ch-btn-count">${qs.length}問${pct !== null ? ' · ' + pct + '%' : ''}${dueInCh > 0 ? ` · <span style="color:var(--accent);font-weight:600">${dueInCh}件期限</span>` : ''}</div>
+    `;
+    div.onclick = () => startChapter(ch);
+    grid.appendChild(div);
+  });
+}
+
+// ========== MODE START ==========
+function startMode(mode) {
+  if (mode === 'review') {
+    const due = getDueQuestions();
+    if (due.length === 0) { alert('今日の復習対象はありません。問題を解くと次回の復習日が設定されます。'); return; }
+    STATE.queue = due;
+    STATE.mode = 'review';
+  } else if (mode === 'interleave') {
+    // 全章混合・未学習・弱点を優先
+    const db = loadDB();
+    const today = todayISO();
+    const scored = QUESTIONS.map(q => {
+      const s = db.srs[q.id];
+      const stage = s ? s.stage : 'new';
+      // 優先度スコア: due > new > learning > review > mastered
+      let pri = 0;
+      if (!s || !s.nextReview) pri = 3;
+      else if (s.nextReview <= today) pri = 4;
+      else if (stage === 'learning') pri = 2;
+      else if (stage === 'review') pri = 1;
+      else pri = 0;
+      return { q, pri };
+    });
+    scored.sort((a, b) => b.pri - a.pri || Math.random() - 0.5);
+    STATE.queue = scored.map(x => x.q).slice(0, 40);
+    STATE.mode = 'interleave';
+  } else if (mode === 'weak') {
+    const wq = getWeakQuestions();
+    if (wq.length === 0) { alert('まだ弱点問題がありません。診断テストや章別ドリルを進めてください。'); return; }
+    STATE.queue = shuffle(wq);
+    STATE.mode = 'weak';
+  } else if (mode === 'diagnostic') {
+    const perCh = 5;
+    let q = [];
+    ['Ch01','Ch02','Ch03','Ch04','Ch05','Ch06'].forEach(ch => {
+      const diagQ = QUESTIONS.filter(x => x.chapter === ch && x.diagnostic);
+      const allQ = QUESTIONS.filter(x => x.chapter === ch);
+      const pool = diagQ.length >= perCh ? diagQ : allQ;
+      q = q.concat(shuffle(pool).slice(0, perCh));
+    });
+    STATE.queue = shuffle(q);
+    STATE.mode = 'diagnostic';
+  } else if (mode === 'mock') {
+    const n = 60;
+    const perCh = 10;
+    let q = [];
+    ['Ch01','Ch02','Ch03','Ch04','Ch05','Ch06'].forEach(ch => {
+      const pool = QUESTIONS.filter(x => x.chapter === ch);
+      q = q.concat(shuffle(pool).slice(0, perCh));
+    });
+    if (q.length < n) q = shuffle(QUESTIONS).slice(0, n);
+    STATE.queue = shuffle(q.slice(0, n));
+    STATE.mode = 'mock';
+  }
+  startQuiz();
+}
+
+function startChapter(ch) {
+  STATE.mode = 'chapter';
+  STATE.chapter = ch;
+  STATE.queue = shuffle(QUESTIONS.filter(q => q.chapter === ch));
+  startQuiz();
+}
+
+// ========== QUIZ ==========
+function startQuiz() {
+  STATE.idx = 0;
+  STATE.correct = 0;
+  STATE.answered = false;
+  STATE.sessionResults = [];
+  STATE.currentConfidence = 0;
+  updateStreak();
+
+  showScreen('quiz');
+  const modeLabels = {
+    diagnostic: '診断テスト（30問）',
+    mock: '75分模試（60問）',
+    weak: '弱点復習',
+    review: '今日の復習（SRS）',
+    interleave: 'インターリーブ（40問）',
+    chapter: CHAPTER_INFO[STATE.chapter]?.name || '章別ドリル',
+  };
+  document.getElementById('quiz-mode-label').textContent = modeLabels[STATE.mode] || '';
+
+  if (STATE.mode === 'mock') {
+    STATE.timerSec = 75 * 60;
+    document.getElementById('quiz-timer').style.display = 'block';
+    startTimer();
+  } else {
+    document.getElementById('quiz-timer').style.display = 'none';
+    clearInterval(STATE.timer);
+  }
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = STATE.queue[STATE.idx];
+  if (!q) { finishQuiz(); return; }
+
+  STATE.answered = false;
+  STATE.currentConfidence = 0;
+
+  // 自信度ボタンをリセット
+  [1,2,3,4].forEach(g => {
+    const btn = document.getElementById('conf-' + g);
+    if (btn) { btn.classList.remove('selected', 'locked'); }
+  });
+  // 模試では自信度UIを非表示（タイム優先）
+  const confArea = document.getElementById('confidence-area');
+  if (confArea) confArea.style.display = STATE.mode === 'mock' ? 'none' : '';
+
+  // SRS次回日時リセット
+  const srsNext = document.getElementById('srs-next');
+  if (srsNext) { srsNext.classList.remove('show'); srsNext.textContent = ''; }
+
+  const total = STATE.queue.length;
+  const pct = Math.round(STATE.idx / total * 100);
+  document.getElementById('pbar').style.width = pct + '%';
+  document.getElementById('q-counter').textContent = `問 ${STATE.idx+1} / ${total}`;
+  document.getElementById('q-score-live').textContent = `正答: ${STATE.correct}`;
+
+  const chInfo = CHAPTER_INFO[q.chapter] || {};
+  const badge = document.getElementById('q-chapter-badge');
+  badge.textContent = q.chapter;
+  badge.style.background = chInfo.color || '#666';
+  document.getElementById('q-section-badge').textContent = q.section || '';
+  document.getElementById('q-text').textContent = q.question;
+
+  // 習熟ステージバッジ
+  const stageBadge = document.getElementById('q-stage-badge');
+  const stage = getQStage(q.id);
+  const stageLabel = { new: 'NEW', learning: '習得中', review: '定着中', mastered: '習熟済み' };
+  stageBadge.textContent = stageLabel[stage] || 'NEW';
+  stageBadge.className = 'stage-badge stage-' + stage;
+
+  const expBox = document.getElementById('exp-box');
+  expBox.classList.remove('show', 'show-correct-only');
+  document.getElementById('exp-wrong-layer').style.display = 'none';
+  document.getElementById('exp-chosen-text').textContent = '';
+  document.getElementById('exp-correct-text').textContent = '';
+  document.getElementById('exp-text').textContent = '';
+
+  // ヒントエリア
+  const hintArea = document.getElementById('hint-area');
+  const hintBox = document.getElementById('hint-box');
+  const hintToggle = document.getElementById('hint-toggle');
+  hintBox.classList.remove('show');
+  hintToggle.classList.remove('open');
+  hintToggle.textContent = '💡 用語ヒントを見る';
+  if (q.hint && q.hint.length) {
+    hintBox.innerHTML = q.hint.map(h =>
+      `<div class="hint-item"><span class="hint-en">${h.en}</span> <span class="hint-ja">= ${h.ja}</span><br><span class="hint-def">→ ${h.def}</span></div>`
+    ).join('');
+    hintArea.style.display = '';
+  } else {
+    hintArea.style.display = 'none';
+  }
+
+  // 選択肢をシャッフルして位置バイアスを排除
+  const origLabels = ['A','B','C','D'].filter(l => q.choices[l]);
+  const shuffledOrig = shuffle(origLabels);
+  const displayLabels = ['A','B','C','D'];
+  STATE.labelMap = {};
+  shuffledOrig.forEach((origL, i) => { STATE.labelMap[displayLabels[i]] = origL; });
+  STATE.displayCorrect = displayLabels[shuffledOrig.indexOf(q.correct)];
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  displayLabels.forEach((dispLabel, i) => {
+    if (i >= shuffledOrig.length) return;
+    const origLabel = shuffledOrig[i];
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.label = dispLabel;
+    btn.innerHTML = `<span class="choice-label">${dispLabel}</span><span>${q.choices[origLabel]}</span>`;
+    btn.onclick = () => selectAnswer(dispLabel, btn);
+    choicesEl.appendChild(btn);
+  });
+
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('btn-skip').style.display = STATE.mode === 'chapter' ? 'inline-block' : 'none';
+}
+
+function selectAnswer(label, btn) {
+  if (STATE.answered) return;
+  STATE.answered = true;
+  const q = STATE.queue[STATE.idx];
+  const displayCorrect = STATE.displayCorrect;
+  const wasCorrect = label === displayCorrect;
+  if (wasCorrect) STATE.correct++;
+
+  const confidence = STATE.currentConfidence;
+  recordAnswer(q.id, wasCorrect, confidence);
+
+  // 自信度ボタンをロック
+  [1,2,3,4].forEach(g => {
+    const b = document.getElementById('conf-' + g);
+    if (b) b.classList.add('locked');
+  });
+
+  // 表示ラベル→元ラベルに戻して記録
+  const origChosen = STATE.labelMap[label] || label;
+  STATE.sessionResults.push({ id: q.id, chapter: q.chapter, question: q.question, correct: q.correct, chosen: origChosen, wasCorrect, explanation: q.explanation, choices: q.choices });
+
+  // 選択肢をロック
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.classList.add('locked');
+    const bl = b.dataset.label;
+    if (bl === displayCorrect) b.classList.add('correct');
+    else if (bl === label && !wasCorrect) b.classList.add('wrong');
+    else b.classList.add('dimmed');
+  });
+
+  // 3層解説を構築
+  const expBox = document.getElementById('exp-box');
+  const chosenOrigLabel = STATE.labelMap[label] || label;
+  const correctOrigLabel = STATE.labelMap[displayCorrect] || displayCorrect;
+  const chosenText = q.choices[chosenOrigLabel] || '';
+  const correctText = q.choices[correctOrigLabel] || '';
+
+  if (!wasCorrect) {
+    document.getElementById('exp-wrong-layer').style.display = '';
+    document.getElementById('exp-chosen-text').textContent = `${label}. ${chosenText}`;
+    document.getElementById('exp-correct-label').textContent = `✅ 正解は ${displayCorrect}`;
+    expBox.classList.remove('show-correct-only');
+  } else {
+    document.getElementById('exp-wrong-layer').style.display = 'none';
+    document.getElementById('exp-correct-label').textContent = `✅ 正解！${displayCorrect} を選びました`;
+    expBox.classList.add('show-correct-only');
+  }
+  document.getElementById('exp-correct-text').textContent = correctText;
+  document.getElementById('exp-text').textContent = q.explanation || '';
+  document.getElementById('q-score-live').textContent = `正答: ${STATE.correct}`;
+
+  // 非対称フィードバック：正解→300ms遅延、誤答→即時（検索強化効果）
+  const showExplanation = () => {
+    expBox.classList.add('show');
+    document.getElementById('btn-next').style.display = 'inline-block';
+    document.getElementById('btn-skip').style.display = 'none';
+
+    // SRS次回日時を表示
+    if (STATE.mode !== 'mock') {
+      const nextRev = getQNextReview(q.id);
+      const srsEl = document.getElementById('srs-next');
+      if (srsEl && nextRev) {
+        const newStage = getQStage(q.id);
+        const stageLabel = { new: 'NEW', learning: '習得中', review: '定着中', mastered: '習熟済み' };
+        const confidenceLabel = ['', '😰 わからない', '🤔 うろ覚え', '😐 たぶん', '😊 確信あり'][confidence] || '（自信度未選択）';
+        srsEl.textContent = `${confidenceLabel} → 次回：${nextRev}（ステージ：${stageLabel[newStage]}）`;
+        srsEl.classList.add('show');
+        // ステージバッジも更新
+        const stageBadge = document.getElementById('q-stage-badge');
+        stageBadge.textContent = stageLabel[newStage] || '';
+        stageBadge.className = 'stage-badge stage-' + newStage;
+      }
+    }
+  };
+
+  if (wasCorrect && STATE.mode !== 'mock') {
+    setTimeout(showExplanation, 300);  // 正解は少し間を置く（検索強化）
+  } else {
+    showExplanation();
+  }
+}
+
+function skipQuestion() {
+  STATE.sessionResults.push({ id: STATE.queue[STATE.idx].id, skipped: true });
+  STATE.idx++;
+  if (STATE.idx >= STATE.queue.length) finishQuiz();
+  else renderQuestion();
+}
+
+function nextQuestion() {
+  STATE.idx++;
+  if (STATE.idx >= STATE.queue.length) finishQuiz();
+  else renderQuestion();
+}
+
+function startTimer() {
+  clearInterval(STATE.timer);
+  STATE.timer = setInterval(() => {
+    STATE.timerSec--;
+    if (STATE.timerSec <= 0) { clearInterval(STATE.timer); finishQuiz(); return; }
+    const m = Math.floor(STATE.timerSec / 60);
+    const s = STATE.timerSec % 60;
+    const el = document.getElementById('quiz-timer');
+    el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if (STATE.timerSec < 300) el.classList.add('warning');
+  }, 1000);
+}
+
+// ========== RESULT ==========
+function finishQuiz() {
+  clearInterval(STATE.timer);
+  showScreen('result');
+
+  const results = STATE.sessionResults;
+  const answered = results.filter(r => !r.skipped);
+  const correct = results.filter(r => r.wasCorrect).length;
+  const total = answered.length;
+  const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+
+  document.getElementById('result-title').textContent =
+    STATE.mode === 'diagnostic' ? '診断結果' : STATE.mode === 'mock' ? '模試結果' : '演習結果';
+
+  const circle = document.getElementById('score-circle');
+  circle.textContent = pct + '%';
+  circle.className = 'score-circle ' + (pct >= 70 ? 'pass' : 'fail');
+  document.getElementById('score-label').textContent = `${correct} / ${total} 問正解`;
+
+  let verdict = '';
+  if (pct >= 80) verdict = '合格圏内です。弱点分野を引き続き磨きましょう。';
+  else if (pct >= 70) verdict = '目標水準には届いています。正答率80%を目指して復習を。';
+  else verdict = 'まだ伸び代があります。誤答を確認して弱点を潰しましょう。';
+  document.getElementById('score-verdict').textContent = verdict;
+
+  // Chapter breakdown
+  const breakdown = document.getElementById('ch-breakdown');
+  breakdown.innerHTML = '';
+  ['Ch01','Ch02','Ch03','Ch04','Ch05','Ch06'].forEach(ch => {
+    const chR = answered.filter(r => r.chapter === ch);
+    if (chR.length === 0) return;
+    const chC = chR.filter(r => r.wasCorrect).length;
+    const chPct = Math.round(chC / chR.length * 100);
+    const info = CHAPTER_INFO[ch];
+    const row = document.createElement('div');
+    row.className = 'ch-bar-row';
+    row.innerHTML = `
+      <div class="ch-bar-name" style="color:${info.color}">${info.name.split('（')[0]}</div>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:${chPct}%;background:${info.color}"></div></div>
+      <div class="ch-bar-pct">${chPct}%</div>
+    `;
+    breakdown.appendChild(row);
+  });
+
+  // Review button
+  const wrongs = results.filter(r => !r.wasCorrect && !r.skipped);
+  document.getElementById('btn-review-wrong').style.display = wrongs.length > 0 ? 'inline-block' : 'none';
+  document.getElementById('review-section').style.display = 'none';
+}
+
+function reviewWrong() {
+  const wrongs = STATE.sessionResults.filter(r => !r.wasCorrect && !r.skipped);
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  wrongs.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    const chInfo = CHAPTER_INFO[r.chapter] || {};
+    div.innerHTML = `
+      <div class="ri-q"><span style="background:${chInfo.color||'#666'};color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;margin-right:6px">${r.chapter}</span>${r.question}</div>
+      <div style="font-size:12px;margin-top:6px">
+        <span style="color:var(--error)">あなたの回答: ${r.chosen} — ${r.choices[r.chosen]||''}</span><br>
+        <span style="color:var(--success)">正解: ${r.correct} — ${r.choices[r.correct]||''}</span>
+      </div>
+      <div class="ri-exp">${r.explanation||''}</div>
+    `;
+    list.appendChild(div);
+  });
+  document.getElementById('review-section').style.display = 'block';
+  document.getElementById('review-section').scrollIntoView({behavior:'smooth'});
+}
+
+// ========== STATS ==========
+function showStats() {
+  showScreen('stats');
+  const db = loadDB();
+  document.getElementById('stats-streak').textContent = db.streak;
+  document.getElementById('s-total').textContent = db.totalAnswered;
+  document.getElementById('s-correct').textContent = db.totalCorrect;
+  const acc = db.totalAnswered > 0 ? Math.round(db.totalCorrect/db.totalAnswered*100)+'%' : '—';
+  document.getElementById('s-acc').textContent = acc;
+  document.getElementById('s-sessions').textContent = db.sessions;
+
+  const list = document.getElementById('q-acc-list');
+  list.innerHTML = '';
+  QUESTIONS.forEach(q => {
+    const hist = db.history[q.id] || [];
+    if (hist.length === 0) return;
+    const dots = Array.from({length:5}).map((_,i) => {
+      if (i >= hist.length) return '<span class="qa-dot u"></span>';
+      return `<span class="qa-dot ${hist[hist.length-1-i] ? 'c':'w'}"></span>`;
+    }).join('');
+    const latest = hist[hist.length-1];
+    const div = document.createElement('div');
+    div.className = 'qa-row';
+    div.innerHTML = `
+      <div style="flex:1;font-size:12px;margin-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        <span style="color:${CHAPTER_INFO[q.chapter]?.color||'#666'};font-size:11px;font-weight:600;margin-right:6px">${q.chapter}</span>${q.question.slice(0,50)}...
+      </div>
+      <div class="qa-dots" style="flex-direction:row-reverse">${dots}</div>
+      <div style="margin-left:8px;font-size:11px;color:${latest?'var(--success)':'var(--error)'}">${latest?'○':'×'}</div>
+    `;
+    list.appendChild(div);
+  });
+  if (list.innerHTML === '') list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">まだ回答履歴がありません</div>';
+}
+
+function resetData() {
+  localStorage.removeItem('aicx_db');
+  location.reload();
+}
+
+// ========== UTIL ==========
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goHome() {
+  clearInterval(STATE.timer);
+  showScreen('home');
+  initHome();
+}
+
+function toggleHint() {
+  const box = document.getElementById('hint-box');
+  const btn = document.getElementById('hint-toggle');
+  const isOpen = box.classList.toggle('show');
+  btn.classList.toggle('open', isOpen);
+  btn.textContent = isOpen ? '💡 用語ヒントを閉じる' : '💡 用語ヒントを見る';
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+// ========== INIT ==========
+initHome();
+</script>
+</body>
+</html>
