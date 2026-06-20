@@ -167,8 +167,9 @@ h1 {
   border-radius: 4px; display: inline-block; margin-bottom: 6px;
   color: #fff;
 }
-.ch-btn-name { font-size: 12px; line-height: 1.4; }
-.ch-btn-count { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.ch-btn-name { font-size: 12px; font-weight: 700; line-height: 1.4; }
+.ch-btn-desc { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+.ch-btn-count { font-size: 11px; color: var(--muted); margin-top: 6px; }
 .section-title {
   font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
   color: var(--muted); margin-bottom: 12px; font-weight: 600;
@@ -7730,12 +7731,18 @@ const DIAGNOSTIC_QUESTIONS = QUESTIONS.filter(q => q.diagnostic);
 
 // 章情報
 const CHAPTER_INFO = {
-  Ch01: { name: "Ch01 生成AI・AIエージェントの基礎", color: "#2563eb" },
-  Ch02: { name: "Ch02 業務の基礎（BPR・ECRS）", color: "#16a34a" },
-  Ch03: { name: "Ch03 データ・RAG・ガバナンス", color: "#9333ea" },
-  Ch04: { name: "Ch04 自動化レベル・ワークフロー設計", color: "#ea580c" },
-  Ch05: { name: "Ch05 人と組織・チェンジマネジメント", color: "#be185d" },
-  Ch06: { name: "Ch06 5Dモデル（Discovery→Deployment）", color: "#0891b2" },
+  Ch01: { name: "Ch01 生成AI・AIエージェントの基礎", color: "#2563eb",
+          desc: "LLM・RAG・MCPとは何か。AIが「自律的に動く」仕組みと、コスト・リスクの基礎知識" },
+  Ch02: { name: "Ch02 業務の基礎（BPR・ECRS）", color: "#16a34a",
+          desc: "AI導入前に業務を整理する方法。「何を自動化すべきか」を数字で判断する手法" },
+  Ch03: { name: "Ch03 データ・RAG・ガバナンス", color: "#9333ea",
+          desc: "AIに読ませるデータの作り方・管理方法。セキュリティと「情報漏洩を防ぐ設計」" },
+  Ch04: { name: "Ch04 自動化レベル・ワークフロー設計", color: "#ea580c",
+          desc: "どこまで人間が判断し、どこからAIに任せるか。エージェントの組み合わせパターン" },
+  Ch05: { name: "Ch05 人と組織・チェンジマネジメント", color: "#be185d",
+          desc: "現場が「使わない・使えない」を防ぐ方法。反発・スキルギャップへの対処法" },
+  Ch06: { name: "Ch06 5Dモデル（Discovery→Deployment）", color: "#0891b2",
+          desc: "AI導入プロジェクトの5ステップ全体像。各フェーズで何を決め・何を作るか" },
 };
 
 
@@ -8066,6 +8073,7 @@ function initHome() {
     div.innerHTML = `
       <div class="ch-btn-badge" style="background:${info.color}">${ch}</div>
       <div class="ch-btn-name">${info.name.replace(ch+' ','')}</div>
+      <div class="ch-btn-desc">${info.desc || ''}</div>
       <div class="ch-stage-bar">${stageBar}</div>
       <div class="ch-btn-count">${qs.length}問${pct !== null ? ' · ' + pct + '%' : ''}${dueInCh > 0 ? ` · <span style="color:var(--accent);font-weight:600">${dueInCh}件期限</span>` : ''}</div>
     `;
