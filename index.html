@@ -587,6 +587,16 @@ h1 {
     <div class="section-title">章別スコア</div>
     <div class="result-ch-breakdown" id="ch-breakdown"></div>
 
+    <!-- 次にやることカード（診断テスト・模試後に表示） -->
+    <div id="next-action-card" style="display:none;margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">次にやること</div>
+      <div style="background:var(--primary);color:#fff;border-radius:14px;padding:20px 22px">
+        <div style="font-size:17px;font-weight:700;margin-bottom:8px;line-height:1.4" id="next-action-title"></div>
+        <div style="font-size:13px;opacity:.82;line-height:1.6;margin-bottom:16px" id="next-action-body"></div>
+        <button style="background:#fff;color:var(--primary);border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer" id="next-action-btn"></button>
+      </div>
+    </div>
+
     <div class="result-actions" style="margin-bottom:28px">
       <button class="btn btn-primary" onclick="reviewWrong()" id="btn-review-wrong">誤答を確認する</button>
       <button class="btn btn-ghost" onclick="goHome()">ホームへ</button>
@@ -8303,6 +8313,47 @@ function finishQuiz() {
   const wrongs = results.filter(r => !r.wasCorrect && !r.skipped);
   document.getElementById('btn-review-wrong').style.display = wrongs.length > 0 ? 'inline-block' : 'none';
   document.getElementById('review-section').style.display = 'none';
+
+  // 「次にやること」カード（診断テスト・模試後）
+  const nextCard = document.getElementById('next-action-card');
+  if (STATE.mode === 'diagnostic' || STATE.mode === 'mock') {
+    // 章別正答率を計算して弱点章を特定（60%未満を弱点とする）
+    const chScores = {};
+    ['Ch01','Ch02','Ch03','Ch04','Ch05','Ch06'].forEach(ch => {
+      const chR = answered.filter(r => r.chapter === ch);
+      if (chR.length === 0) return;
+      chScores[ch] = Math.round(chR.filter(r => r.wasCorrect).length / chR.length * 100);
+    });
+    const weakChs = Object.entries(chScores)
+      .filter(([, pct]) => pct < 60)
+      .sort(([, a], [, b]) => a - b)
+      .slice(0, 3);
+
+    const titleEl = document.getElementById('next-action-title');
+    const bodyEl  = document.getElementById('next-action-body');
+    const btnEl   = document.getElementById('next-action-btn');
+
+    if (wrongs.length === 0) {
+      titleEl.textContent = '完璧です！全章まぜこぜ演習で本番力を磨きましょう';
+      bodyEl.textContent  = '誤答なし。記憶を定着させるため、章をまたいだランダム演習を続けましょう。';
+      btnEl.textContent   = '全章まぜこぜ演習を始める →';
+      btnEl.onclick       = () => startMode('interleave');
+    } else if (weakChs.length > 0) {
+      const chNames = weakChs.map(([ch]) => CHAPTER_INFO[ch].name.split('（')[0]).join('・');
+      titleEl.textContent = `弱点は ${chNames} です。今すぐ集中練習しましょう`;
+      bodyEl.textContent  = `誤答した問題を今すぐ解き直すことが記憶の定着に最も効きます。「苦手問題だけ再チャレンジ」で弱点を潰してから、明日以降の復習につなげましょう。`;
+      btnEl.textContent   = '苦手問題だけ再チャレンジ →';
+      btnEl.onclick       = () => startMode('weak');
+    } else {
+      titleEl.textContent = '合格圏内！引き続き苦手を潰していきましょう';
+      bodyEl.textContent  = `誤答した問題を「苦手問題だけ再チャレンジ」で今すぐ解き直すのが最も効果的です。`;
+      btnEl.textContent   = '苦手問題だけ再チャレンジ →';
+      btnEl.onclick       = () => startMode('weak');
+    }
+    nextCard.style.display = 'block';
+  } else {
+    nextCard.style.display = 'none';
+  }
 }
 
 function reviewWrong() {
