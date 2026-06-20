@@ -662,7 +662,9 @@ h1 {
       </div>
       <div class="q-text" id="q-text">問題文</div>
       <div class="confidence-area" id="confidence-area">
-        <div class="conf-label">自信度</div>
+        <div class="conf-label">答える前に確信度を選んでください
+          <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px">選ぶほど次の出題タイミングが最適化されます</span>
+        </div>
         <div class="conf-buttons">
           <button class="conf-btn" id="conf-1" onclick="setConfidence(1)">😰<span>わからない</span></button>
           <button class="conf-btn" id="conf-2" onclick="setConfidence(2)">🤔<span>うろ覚え</span></button>
