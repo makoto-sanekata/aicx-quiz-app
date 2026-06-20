@@ -170,6 +170,46 @@ h1 {
 .ch-btn-name { font-size: 12px; font-weight: 700; line-height: 1.4; }
 .ch-btn-desc { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
 .ch-btn-count { font-size: 11px; color: var(--muted); margin-top: 6px; }
+/* === 資格説明（折りたたみ） === */
+.cert-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--muted); cursor: pointer;
+  border: none; background: none; padding: 0; margin-bottom: 4px;
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-style: dotted;
+}
+.cert-toggle:hover { color: var(--text); }
+.cert-body {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px; margin-bottom: 20px;
+  font-size: 13px; line-height: 1.7;
+}
+.cert-body strong { font-weight: 700; }
+.cert-body ul { padding-left: 16px; margin-top: 6px; }
+.cert-body li { margin-bottom: 2px; }
+/* === 試験日エディタ === */
+.countdown-edit-btn {
+  position: absolute; top: 10px; right: 12px;
+  background: rgba(255,255,255,.15); border: none; border-radius: 6px;
+  color: #fff; font-size: 12px; cursor: pointer; padding: 3px 7px;
+  opacity: 0; transition: opacity .2s;
+}
+.countdown-block:hover .countdown-edit-btn { opacity: 1; }
+.countdown-block { position: relative; }
+.date-editor {
+  margin-top: 12px; display: flex; flex-direction: column; gap: 6px; align-items: center;
+}
+.date-editor input[type=date] {
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+  color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px;
+  width: 100%; text-align: center;
+}
+.date-editor-btns { display: flex; gap: 6px; width: 100%; }
+.date-editor-btns button {
+  flex: 1; border: none; border-radius: 7px; padding: 6px; font-size: 12px;
+  font-weight: 700; cursor: pointer;
+}
+.date-editor-btns .btn-save { background: var(--energy); color: #fff; }
+.date-editor-btns .btn-cancel { background: rgba(255,255,255,.15); color: #fff; }
 .section-title {
   font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
   color: var(--muted); margin-bottom: 12px; font-weight: 600;
@@ -485,6 +525,22 @@ h1 {
     <h1>AIエージェント・ストラテジスト</h1>
     <div class="home-sub">試験対策演習アプリ v1.0 &nbsp;|&nbsp; <span id="home-total-q">0</span>問収録</div>
 
+    <!-- 資格説明（折りたたみ） -->
+    <button class="cert-toggle" onclick="toggleCertInfo()" id="cert-toggle-btn">
+      この資格について <span id="cert-toggle-icon">▾</span>
+    </button>
+    <div class="cert-body" id="cert-body" style="display:none">
+      <strong>AIエージェント・ストラテジスト</strong>は、AICX協会が認定する AIエージェント活用の専門資格です。<br><br>
+      <strong>取得するメリット</strong>
+      <ul>
+        <li>生成AI・AIエージェントを業務に導入する体系的な知識が身につく</li>
+        <li>経営層・現場・エンジニアの橋渡し役として価値を発揮できる</li>
+        <li>「AIを使いこなせる人材」として市場価値が高まる</li>
+      </ul>
+      <br>
+      <strong>対象者</strong>：AIで業務改善・新規事業推進を担いたいビジネスパーソン
+    </div>
+
     <!-- アダプティブ ガイダンス -->
     <div class="guidance-card" id="guidance-card">
       <div class="guidance-eyebrow">今すぐやること</div>
@@ -495,10 +551,20 @@ h1 {
 
     <!-- Hero: カウントダウン + ストリーク -->
     <div class="hero-row">
-      <div class="countdown-block">
-        <div class="countdown-num" id="days-left">—</div>
-        <div class="countdown-label">試験まであと</div>
-        <div class="countdown-date">2026年7月27日</div>
+      <div class="countdown-block" id="countdown-block">
+        <button class="countdown-edit-btn" onclick="openDateEdit()" title="試験日を変更">✏️ 変更</button>
+        <div id="countdown-display">
+          <div class="countdown-num" id="days-left">—</div>
+          <div class="countdown-label" id="countdown-label">試験まであと</div>
+          <div class="countdown-date" id="countdown-date-label">設定してください</div>
+        </div>
+        <div class="date-editor" id="date-editor" style="display:none">
+          <input type="date" id="exam-date-input">
+          <div class="date-editor-btns">
+            <button class="btn-save" onclick="saveExamDate()">保存</button>
+            <button class="btn-cancel" onclick="closeDateEdit()">キャンセル</button>
+          </div>
+        </div>
       </div>
       <div class="streak-block">
         <div class="streak-fire" id="streak-fire">🔥</div>
@@ -7980,10 +8046,21 @@ function initHome() {
   document.getElementById('stat-mastered').textContent = ms.mastered || 0;
 
   // === 試験カウントダウン ===
-  const EXAM = new Date('2026-07-27T00:00:00');
-  const now  = new Date(); now.setHours(0,0,0,0);
-  const daysLeft = Math.max(0, Math.round((EXAM - now) / 86400000));
-  document.getElementById('days-left').textContent = daysLeft;
+  const storedDate = localStorage.getItem('aicx_exam_date');
+  if (!storedDate) {
+    document.getElementById('days-left').textContent = '?';
+    document.getElementById('countdown-date-label').textContent = '試験日を設定してください';
+    document.getElementById('countdown-label').textContent = '試験まであと';
+    openDateEdit();
+  } else {
+    const EXAM = new Date(storedDate + 'T00:00:00');
+    const now  = new Date(); now.setHours(0,0,0,0);
+    const daysLeft = Math.max(0, Math.round((EXAM - now) / 86400000));
+    document.getElementById('days-left').textContent = daysLeft;
+    const [y, m, d] = storedDate.split('-');
+    document.getElementById('countdown-date-label').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日`;
+    document.getElementById('countdown-label').textContent = '試験まであと';
+  }
 
   // === ストリーク ===
   const streakEl = document.getElementById('streak-hero');
@@ -8536,6 +8613,36 @@ function showScreen(id) {
 function goHome() {
   clearInterval(STATE.timer);
   showScreen('home');
+  initHome();
+}
+
+// ===== 資格説明トグル =====
+function toggleCertInfo() {
+  const body = document.getElementById('cert-body');
+  const icon = document.getElementById('cert-toggle-icon');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▴' : '▾';
+}
+
+// ===== 試験日設定 =====
+function openDateEdit() {
+  document.getElementById('date-editor').style.display = 'block';
+  document.getElementById('countdown-display').style.opacity = '0.4';
+  const stored = localStorage.getItem('aicx_exam_date');
+  if (stored) document.getElementById('exam-date-input').value = stored;
+}
+
+function closeDateEdit() {
+  document.getElementById('date-editor').style.display = 'none';
+  document.getElementById('countdown-display').style.opacity = '1';
+}
+
+function saveExamDate() {
+  const val = document.getElementById('exam-date-input').value;
+  if (!val) return;
+  localStorage.setItem('aicx_exam_date', val);
+  closeDateEdit();
   initHome();
 }
 
