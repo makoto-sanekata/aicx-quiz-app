@@ -374,6 +374,43 @@ h1 {
 /* === モードグリッド 3列対応 === */
 .mode-grid-wide { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 520px) { .mode-grid-wide { grid-template-columns: 1fr; } }
+
+/* === アダプティブ ガイダンスカード === */
+.guidance-card {
+  background: var(--primary); color: #F5F4EF;
+  border-radius: 16px; padding: 24px 26px;
+  margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.guidance-card::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,.05);
+}
+.guidance-eyebrow {
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: rgba(245,244,239,.5); margin-bottom: 8px; font-weight: 600;
+}
+.guidance-title {
+  font-size: 18px; font-weight: 700; margin-bottom: 8px; line-height: 1.4;
+  font-family: Georgia, serif;
+}
+.guidance-body {
+  font-size: 13px; color: rgba(245,244,239,.75); margin-bottom: 20px;
+  line-height: 1.65;
+}
+.guidance-btn {
+  display: inline-block; background: #F5F4EF; color: var(--primary);
+  border: none; border-radius: 10px; padding: 10px 20px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.guidance-btn:hover { background: #fff; transform: translateY(-1px); }
+
+/* === モードカード "いつ使う" ラベル === */
+.mode-when {
+  font-size: 10px; color: var(--accent); margin-top: 4px;
+  font-weight: 600; letter-spacing: 0.3px;
+}
 </style>
 </head>
 <body>
@@ -384,6 +421,14 @@ h1 {
     <div class="home-logo">AICX認定</div>
     <h1>AIエージェント・ストラテジスト</h1>
     <div class="home-sub">試験対策演習アプリ v1.0 &nbsp;|&nbsp; <span id="home-total-q">0</span>問収録</div>
+
+    <!-- アダプティブ ガイダンス -->
+    <div class="guidance-card" id="guidance-card">
+      <div class="guidance-eyebrow">今すぐやること</div>
+      <div class="guidance-title" id="guidance-title">読み込み中...</div>
+      <div class="guidance-body" id="guidance-body"></div>
+      <button class="guidance-btn" id="guidance-btn" onclick="">—</button>
+    </div>
 
     <div class="stats-row">
       <div class="stat-card">
@@ -429,31 +474,37 @@ h1 {
         <div class="mode-icon">🔁</div>
         <div class="mode-title">今日の復習</div>
         <div class="mode-desc">SRS期限が来た問題を優先演習</div>
+        <div class="mode-when">毎日ここから始める</div>
       </div>
       <div class="mode-card" onclick="startMode('interleave')">
         <div class="mode-icon">🔀</div>
         <div class="mode-title">インターリーブ</div>
         <div class="mode-desc">全章混合・記憶定着に最も効く</div>
+        <div class="mode-when">復習後・メイン演習に</div>
       </div>
       <div class="mode-card" onclick="startMode('diagnostic')">
         <div class="mode-icon">🎯</div>
         <div class="mode-title">診断テスト</div>
         <div class="mode-desc">全6章から30問・弱点を客観特定</div>
+        <div class="mode-when">最初 or 2週間ごとに</div>
       </div>
       <div class="mode-card" onclick="startMode('mock')">
         <div class="mode-icon">⏱</div>
         <div class="mode-title">75分模試</div>
         <div class="mode-desc">本番形式・60問・タイマー付き</div>
+        <div class="mode-when">試験1週間前から</div>
       </div>
       <div class="mode-card" id="weakcard" onclick="startMode('weak')">
         <div class="mode-icon">📌</div>
         <div class="mode-title">弱点復習</div>
         <div class="mode-desc">誤答した問題を再演習</div>
+        <div class="mode-when">診断後に重点補強</div>
       </div>
       <div class="mode-card" onclick="showStats()">
         <div class="mode-icon">📊</div>
         <div class="mode-title">学習統計</div>
         <div class="mode-desc">問題別正答履歴・進捗確認</div>
+        <div class="mode-when">週1回の進捗確認に</div>
       </div>
     </div>
 
@@ -3771,6 +3822,59 @@ function updateStreak() {
   saveDB(db);
 }
 
+// ========== アダプティブ ガイダンス ==========
+function getNextAction(db, ms) {
+  const weak = getWeakQuestions().length;
+
+  if (db.totalAnswered === 0) {
+    return {
+      title: 'まず診断テストを受けましょう',
+      body: '全6章から30問を出題し、あなたの弱点を客観的に特定します。所要時間は約15分。ここから始めるのが最短ルートです。',
+      btnText: '診断テストを始める →',
+      fn: "startMode('diagnostic')"
+    };
+  }
+  if (ms.due > 0) {
+    return {
+      title: `今日の復習が ${ms.due}問 たまっています`,
+      body: '忘却曲線に基づく最適タイミングです。記憶が薄れる前に復習しておくと定着率が大幅に上がります。他の演習より先にこれを済ませましょう。',
+      btnText: `今すぐ ${ms.due}問 復習する →`,
+      fn: "startMode('review')"
+    };
+  }
+  if (weak > 0 && db.totalAnswered >= 15) {
+    return {
+      title: `弱点が ${weak}問 あります`,
+      body: '誤答率40%以上の問題です。苦手なままにしておくと試験で同じミスを繰り返します。集中的に取り組んでおきましょう。',
+      btnText: `弱点 ${weak}問 を潰す →`,
+      fn: "startMode('weak')"
+    };
+  }
+  if (ms.new > 80) {
+    return {
+      title: 'まだ手をつけていない問題がたくさんあります',
+      body: `未学習の問題が ${ms.new}問 残っています。章別ドリルで1章ずつ進めていくか、インターリーブで全章を混ぜて取り組みましょう。`,
+      btnText: '章別ドリルへ ↓',
+      fn: "document.getElementById('ch-grid').scrollIntoView({behavior:'smooth'})"
+    };
+  }
+  return {
+    title: 'インターリーブで記憶を定着させましょう',
+    body: '全章を混ぜて出題するインターリーブ学習は、章別ドリルより記憶の定着が高いことが実証されています。今の段階ではこれがメイン演習です。',
+    btnText: 'インターリーブを始める →',
+    fn: "startMode('interleave')"
+  };
+}
+
+function updateGuidance(db, ms) {
+  const next = getNextAction(db, ms);
+  document.getElementById('guidance-title').textContent = next.title;
+  document.getElementById('guidance-body').textContent  = next.body;
+  const btn = document.getElementById('guidance-btn');
+  btn.textContent = next.btnText;
+  btn.setAttribute('onclick', next.fn);
+}
+
 // ========== HOME ==========
 function initHome() {
   const db = loadDB();
@@ -3782,6 +3886,7 @@ function initHome() {
 
   // SRS統計
   const ms = getMasteryStats();
+  updateGuidance(db, ms);
   document.getElementById('stat-due').textContent = ms.due;
   document.getElementById('stat-new').textContent = ms.new || 0;
   document.getElementById('stat-learning').textContent = ms.learning || 0;
