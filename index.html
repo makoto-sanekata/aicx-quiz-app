@@ -567,6 +567,23 @@ h1 {
       合格後は「AICX協会認定 AIエージェント・ストラテジスト」として資格欄に記載可能。AI活用を推進できる人材であることを、客観的に証明する手段になります。
     </div>
 
+    <button class="cert-toggle" onclick="toggleWhyQuiz()" id="why-quiz-toggle-btn" style="margin-top:8px">
+      なぜ、読むより解く方が頭に入るの？ <span id="why-quiz-toggle-icon">▾</span>
+    </button>
+    <div class="cert-body" id="why-quiz-body" style="display:none">
+      <p style="margin:0 0 12px">単語帳を「ながら読み」した後より、「隠して思い出そうとした後」の方がテストで点が取れる——こんな経験、ありませんか？</p>
+      <p style="margin:0 0 12px">脳は<strong>「思い出そうとするとき」に記憶を強化します</strong>。読んでいるときは情報が目の前にあるので、脳はサボります。でも「えっと、なんだっけ」と引き出そうとした瞬間に、神経のつながりが強くなる。</p>
+      <div style="background:var(--bg);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;line-height:1.7">
+        📖 テキストを読む → 「分かった気」になる<br>
+        ✏️ 問題を解く → 脳が「正しく思い出す練習」をする
+      </div>
+      <p style="margin:0 0 12px">さらに言うと、<strong>間違えたときが一番の定着タイミング</strong>です。「あ、違った。正解はこれか」という瞬間、脳はその情報を「重要」と判断して優先的に覚えます。</p>
+      <p style="margin:0 0 12px">だから最初から全問正解できなくていい。むしろ<strong>間違えながら進む方が、最短で合格レベルに到達できます</strong>。</p>
+      <div style="background:var(--primary);color:#fff;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7">
+        このアプリが「読む教材」でなく「解く練習」だけに絞っているのは、そのためです。テキストは手元に置きつつ、演習をメインにするのが最も効率的な使い方です。
+      </div>
+    </div>
+
     <!-- アダプティブ ガイダンス -->
     <div class="guidance-card" id="guidance-card">
       <div class="guidance-eyebrow">今すぐやること</div>
@@ -8670,6 +8687,14 @@ function goHome() {
 function toggleCertInfo() {
   const body = document.getElementById('cert-body');
   const icon = document.getElementById('cert-toggle-icon');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▴' : '▾';
+}
+
+function toggleWhyQuiz() {
+  const body = document.getElementById('why-quiz-body');
+  const icon = document.getElementById('why-quiz-toggle-icon');
   const open = body.style.display === 'none';
   body.style.display = open ? 'block' : 'none';
   icon.textContent = open ? '▴' : '▾';
