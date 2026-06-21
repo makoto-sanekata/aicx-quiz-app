@@ -8248,7 +8248,18 @@ function startMode(mode) {
 function startChapter(ch) {
   STATE.mode = 'chapter';
   STATE.chapter = ch;
-  STATE.queue = shuffle(QUESTIONS.filter(q => q.chapter === ch));
+  const db = loadDB();
+  const today = todayISO();
+  const pool = QUESTIONS.filter(q => q.chapter === ch);
+  // 未回答 → 復習期限到来済み → まだ余裕あり の順で並べる
+  const unseen = [], due = [], fresh = [];
+  pool.forEach(q => {
+    const srs = db.srs[q.id];
+    if (!srs || !srs.nextReview) unseen.push(q);
+    else if (srs.nextReview <= today) due.push(q);
+    else fresh.push(q);
+  });
+  STATE.queue = [...shuffle(unseen), ...shuffle(due), ...shuffle(fresh)];
   startQuiz();
 }
 
