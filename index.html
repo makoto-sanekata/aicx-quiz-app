@@ -8163,7 +8163,7 @@ function renderMemoryMap() {
     const pU = Math.max(0, 100 - pO - pS - pG);
 
     let pctColor = 'var(--muted)';
-    let pctText = '未学習';
+    let pctText = '―';
     if (r.retention !== null) {
       pctText = r.retention + '%';
       pctColor = r.retention >= 70 ? '#22c55e' : r.retention >= 40 ? '#f59e0b' : '#ef4444';
