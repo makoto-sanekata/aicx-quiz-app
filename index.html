@@ -8156,33 +8156,27 @@ function renderMemoryMap() {
   });
 
   const rowsHTML = rows.map(r => {
-    const t = r.total;
-    const pO = Math.round(r.overdue / t * 100);
-    const pS = Math.round(r.soon   / t * 100);
-    const pG = Math.round(r.safe   / t * 100);
-    const pU = Math.max(0, 100 - pO - pS - pG);
-
-    let pctColor = 'var(--muted)';
-    let pctText = '―';
-    if (r.retention !== null) {
-      pctText = r.retention + '%';
-      pctColor = r.retention >= 70 ? '#22c55e' : r.retention >= 40 ? '#f59e0b' : '#ef4444';
+    // 章全体を1色で表す（信号機モデル）
+    let barColor, statusText, statusColor;
+    if (r.overdue > 0) {
+      barColor = '#ef4444'; statusText = '今すぐ'; statusColor = '#ef4444';
+    } else if (r.soon > 0) {
+      barColor = '#f59e0b'; statusText = 'もうすぐ'; statusColor = '#f59e0b';
+    } else if (r.safe > 0) {
+      barColor = '#22c55e'; statusText = '余裕あり'; statusColor = '#22c55e';
+    } else {
+      barColor = 'var(--border)'; statusText = '―'; statusColor = 'var(--muted)';
     }
-    const dueTag = r.overdue > 0
-      ? `<span class="memory-due-tag">${r.overdue}問</span>` : '';
+    const studied = r.overdue + r.soon + r.safe;
+    const studiedPct = Math.round(studied / r.total * 100);
+    const barWidth = studied > 0 ? studiedPct : 0;
 
     return `<div class="memory-ch-row" onclick="startChapter('${r.ch}')">
       <span class="memory-ch-label">${r.ch}</span>
       <div class="memory-ch-bar-bg">
-        <div class="mem-overdue" style="width:${pO}%"></div>
-        <div class="mem-soon"    style="width:${pS}%"></div>
-        <div class="mem-safe"    style="width:${pG}%"></div>
-        <div class="mem-unseen"  style="width:${pU}%"></div>
+        <div style="width:${barWidth}%;background:${barColor};height:100%;border-radius:999px;transition:width .4s"></div>
       </div>
-      <div class="memory-ch-right">
-        <span class="memory-ch-pct" style="color:${pctColor}">${pctText}</span>
-        ${dueTag}
-      </div>
+      <span class="memory-ch-pct" style="color:${statusColor};min-width:52px;text-align:right;font-size:11px;font-weight:700">${statusText}</span>
     </div>`;
   }).join('');
 
@@ -8197,12 +8191,11 @@ function renderMemoryMap() {
     <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.6">エビングハウスの忘却曲線に基づいて設計されています。各行をタップするとその章のドリルをすぐ開始できます。</p>
     ${rowsHTML}
     <div class="memory-legend">
-      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:#ef4444"></div><span>🔴 今すぐ復習 <strong style="color:var(--text)">← 最適タイミング</strong></span></div>
-      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:#f59e0b"></div>🟡 3日以内に復習</div>
-      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:#22c55e"></div>🟢 定着中（まだ余裕）</div>
-      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:var(--border)"></div>⬜ 未挑戦</div>
-    </div>
-    <p style="font-size:11px;color:var(--muted);margin:8px 0 0;line-height:1.5">🔴赤＝失敗ではなく「今引き出すと最も定着する」タイミングです。赤から先に解きましょう。</p>`;
+      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:#ef4444"></div>今すぐ復習 ← 最適</div>
+      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:#f59e0b"></div>もうすぐ期限</div>
+      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:#22c55e"></div>余裕あり</div>
+      <div class="memory-legend-item"><div class="memory-legend-dot" style="background:var(--border)"></div>未挑戦</div>
+    </div>`;
 }
 
 function initHome() {
